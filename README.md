@@ -44,6 +44,22 @@ Each "Act" is separated into its own file for easier iteration:
 
 All acts share a common synthwave/cyberpunk color palette defined in `common.py`.
 
+## Requirements
+
+Before you begin, ensure you have the following installed:
+
+- **Python 3.11+** - For running manim and animations
+- **[just](https://github.com/casey/just)** - Command runner (optional but recommended)
+  - macOS: `brew install just`
+  - Ubuntu/Debian: `sudo snap install --edge --classic just`
+  - Other: See [just installation docs](https://github.com/casey/just#installation)
+- **ffmpeg** - Required for joining lifecycle videos into complete animations
+  - macOS: `brew install ffmpeg`
+  - Ubuntu/Debian: `sudo apt install ffmpeg`
+  - Windows: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
+
+Note: Manim and other Python dependencies are installed automatically via `just setup` into a virtual environment.
+
 ## Quick Start
 
 This project uses [just](https://github.com/casey/just) as a command runner and a Python virtual environment to keep dependencies isolated.
