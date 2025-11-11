@@ -199,7 +199,7 @@ group.arrange(RIGHT, buff=0.5)       # Arrange horizontally with spacing
 ## Best Practices
 
 ### 1. Iterate Quickly
-- Always start with `-ql` (preview quality) for fast iteration
+- Always start with `just preview` (480p preview quality) for fast iteration
 - Only render higher quality when the animation is finalized
 
 ### 2. Use Wait Statements
@@ -259,16 +259,26 @@ class ComplexScene(Scene):
 
 ## Debugging
 
-### Preview Without Rendering
-Use manim's interactive mode:
+### Quick Preview
+Use the justfile for standard previews:
+```bash
+just preview MyScene my_scene
+```
+
+### Interactive Mode (for advanced debugging)
+When you need interactive control or special flags, use manim directly:
 ```bash
 source venv/bin/activate
 manim animations/my_scene.py MyScene -p --preview
 ```
 
-### Check for Errors
+### Check for Errors with Verbose Output
 ```bash
-# Verbose output
+# Using justfile (recommended for most cases)
+just preview MyScene my_scene
+
+# Using manim directly with debug flags (for troubleshooting)
+source venv/bin/activate
 manim -ql animations/my_scene.py MyScene -v DEBUG
 ```
 

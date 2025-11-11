@@ -49,6 +49,27 @@ A ~20-second animation showing a transaction lifecycle:
 
 ## Rendering
 
+### Using justfile (recommended)
+
+```bash
+# Low quality (480p) - fast preview
+just preview BitcoinVehicleIntro
+
+# Medium quality (720p) - good for review
+just render BitcoinVehicleIntro
+
+# High quality (1080p) - production
+just render-hq BitcoinVehicleIntro
+
+# 4K quality - final export
+just render-4k BitcoinVehicleIntro
+
+# Render all POC scenes at preview quality
+just preview-all
+```
+
+### Using manim directly (alternative)
+
 ```bash
 # Low quality (480p) - fast preview
 manim -ql animations/bitcoin_vehicle_intro.py BitcoinVehicleIntro
