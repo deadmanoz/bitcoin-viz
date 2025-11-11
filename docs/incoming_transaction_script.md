@@ -144,7 +144,8 @@ const uint256& wtxid = ptx->GetWitnessHash(); // With witness
 
 **Code Overlay:**
 ```cpp
-// src/node/txdownloadman.h:158
+// src/net_processing.cpp - PeerManagerImpl::ProcessMessage
+// src/node/txdownloadman.h:158 - TxDownloadManager::ReceivedTx
 auto [should_validate, package_to_validate] =
     m_txdownloadman.ReceivedTx(pfrom.GetId(), ptx);
 ```
@@ -174,7 +175,7 @@ auto [should_validate, package_to_validate] =
 **Scenario 2: Orphan (middle path glows)**
 - One input's parent missing (shown as ???)
 - Transaction placed in "TxOrphanage" (temporary holding area)
-- Visual: Glowing cube labeled "Orphanage (max 100 tx, 20 min TTL)"
+- Visual: Glowing cube labeled "Orphanage (weight & latency-limited)"
 
 **Scenario 3: Package (right path glows)**
 - Parent tx arrives from orphanage
@@ -182,8 +183,13 @@ auto [should_validate, package_to_validate] =
 - "package_to_validate = {parent, child}"
 - Caption: "Child-Pays-For-Parent (CPFP)"
 
+**Code Reference:**
+```
+src/node/txorphanage.h - TxOrphanage limits per peer and globally
+```
+
 **Narration:**
-> "Normal transactions proceed to validation immediately. Orphans wait in temporary storage. When an orphan's parent arrives, both can be validated together as a package, enabling Child-Pays-For-Parent fee bumping."
+> "Normal transactions proceed to validation immediately. Orphans wait in temporary storage based on weight and latency limits. When an orphan's parent arrives, both can be validated together as a package, enabling Child-Pays-For-Parent fee bumping."
 
 ---
 
@@ -196,14 +202,14 @@ auto [should_validate, package_to_validate] =
 
 **Code Overlay:**
 ```cpp
-// src/validation.cpp:4547
+// src/validation.cpp:4547 - Entry point from net_processing
 MempoolAcceptResult ChainstateManager::ProcessTransaction(
     const CTransactionRef& tx, bool test_accept = false)
 {
     return AcceptToMemoryPool(m_active_chainstate, tx, ...);
 }
 
-// src/validation.cpp:1860
+// src/validation.cpp:1860 - Main validation orchestrator
 MempoolAcceptResult AcceptToMemoryPool(...) {
     MemPoolAccept mem_pool_accept(pool, active_chainstate);
     return mem_pool_accept.AcceptSingleTransaction(tx, args);
@@ -232,7 +238,8 @@ MempoolAcceptResult AcceptToMemoryPool(...) {
 
 #### Check 1-3: Basic Structure
 ```cpp
-// Line 802
+// src/validation.cpp:802
+// src/consensus/tx_check.cpp - CheckTransaction
 CheckTransaction(tx)  ✓
 ```
 **Visual:**
@@ -242,7 +249,8 @@ CheckTransaction(tx)  ✓
 
 #### Check 4: Standard Format
 ```cpp
-// Line 812
+// src/validation.cpp:812
+// src/policy/policy.cpp - IsStandardTx
 IsStandardTx(tx)  ✓
 ```
 **Visual:**
@@ -273,7 +281,8 @@ Check for input conflicts     ✓
 
 #### Check 8: UTXO Availability
 ```cpp
-// Lines 853-872
+// src/validation.cpp:853-872
+// Checks the CCoinsViewCache for each input
 for (const CTxIn& txin : tx.vin) {
     if (!m_view.HaveCoin(txin.prevout)) {
         return state.Invalid(TxValidationResult::TX_MISSING_INPUTS);
@@ -291,7 +300,8 @@ for (const CTxIn& txin : tx.vin) {
 
 #### Check 9-10: Input Values
 ```cpp
-// Line 896
+// src/validation.cpp:896
+// src/consensus/tx_verify.cpp - CheckTxInputs (validates no value overflow)
 Consensus::CheckTxInputs(tx, state, m_view)  ✓
 ```
 **Visual:**
@@ -316,23 +326,26 @@ IsWitnessStandard(tx)  ✓
 
 #### Check 14: Sigop Cost
 ```cpp
-// Line 909
-GetTransactionSigOpCost(tx) ≤ 4000  ✓
+// src/validation.cpp:942
+// src/policy/policy.h:40
+GetTransactionSigOpCost(tx) ≤ MAX_STANDARD_TX_SIGOPS_COST  ✓
+// MAX_STANDARD_TX_SIGOPS_COST = 16000
 ```
 **Visual:**
-- Counter: "Sigops: 142 / 4000"
+- Counter: "Sigops: 142 / 16000"
 - ✓ Under limit
 
 #### Check 15-16: Fee Checks
 ```cpp
-// Lines 952-961
-Fee rate ≥ 1 sat/vByte      ✓ (100 sat/vB)
-Fee rate ≥ mempool minimum  ✓ (5 sat/vB current)
+// src/validation.cpp:952-961
+// src/policy/policy.h:66 - DEFAULT_MIN_RELAY_TX_FEE = 100 sat/kvB (0.1 sat/vB)
+Fee rate ≥ minRelayTxFee (0.1 sat/vB)  ✓ (100 sat/vB)
+Fee rate ≥ mempool minimum              ✓ (5 sat/vB current - dynamic)
 ```
 **Visual:**
 - Fee rate bar chart
-- Minimum relay fee line (1 sat/vB)
-- Mempool minimum line (5 sat/vB - dynamic)
+- Minimum relay fee line (0.1 sat/vB - policy floor)
+- Mempool minimum line (5 sat/vB - dynamic, rises when full)
 - Our tx fee (100 sat/vB)
 - ✓ Exceeds both minimums
 
@@ -396,8 +409,10 @@ Size:    200 vB               Size:    250 vB
 **Code Overlay:**
 ```cpp
 // src/validation.cpp:1247-1268
+// src/script/interpreter.h - STANDARD_SCRIPT_VERIFY_FLAGS
 constexpr unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
 
+// src/validation.cpp - CheckInputScripts with policy flags
 CheckInputScripts(tx, state, m_view, scriptVerifyFlags,
                   true, false, ws.m_precomputed_txdata,
                   GetValidationCache());
@@ -450,9 +465,11 @@ ScriptPubKey: OP_DUP OP_HASH160 <hash> OP_EQUALVERIFY OP_CHECKSIG
 **Code Overlay:**
 ```cpp
 // src/validation.cpp:1270-1301
+// src/versionbits.cpp - GetBlockScriptFlags (consensus flags from chain tip)
 unsigned int currentBlockScriptVerifyFlags =
     GetBlockScriptFlags(*m_active_chainstate.m_chain.Tip(), ...);
 
+// Validates with consensus-level flags
 CheckInputsFromMempoolAndCache(tx, state, m_view, m_pool,
                                currentBlockScriptVerifyFlags,
                                ws.m_precomputed_txdata,
@@ -507,7 +524,8 @@ void FinalizeSubpackage() {
 
 **Step 2: Mempool Size Management**
 ```cpp
-// Lines 1485-1496
+// src/validation.cpp:1485-1496
+// src/kernel/mempool_options.h:19 - DEFAULT_MAX_MEMPOOL_SIZE_MB = 300
 if (!bypass_limits) {
     LimitMempoolSize(m_pool, m_active_chainstate.CoinsTip());
 }
@@ -522,7 +540,8 @@ if (!bypass_limits) {
 
 **Step 3: Signal Emission**
 ```cpp
-// Lines 1498-1508
+// src/validation.cpp:1498-1508
+// src/validationinterface.h - CValidationInterface signals
 GetMainSignals().TransactionAddedToMempool(
     tx, m_pool.GetInfo(tx_handle), entry_height
 );
@@ -567,11 +586,11 @@ GetMainSignals().TransactionAddedToMempool(
 
 **Code Overlay:**
 ```cpp
-// src/net_processing.cpp:3007
+// src/net_processing.cpp - After successful mempool admission
 void PeerManagerImpl::ProcessValidTx(NodeId nodeid,
                                       const CTransactionRef& ptx,
                                       ...) {
-    // Relay to other peers
+    // Relay to other peers using INV announcements
     for (CNode* pnode : m_nodes) {
         if (pnode->ShouldRelayTx(ptx)) {
             RelayTransaction(ptx, pnode);
