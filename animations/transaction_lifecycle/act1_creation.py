@@ -73,6 +73,17 @@ class TheWallet(Scene):
         self.play(Write(explain))
         self.wait(1.5)
 
+        # Show coin selection label
+        coin_selection_label = Text(
+            "Coin Selection",
+            font_size=20,
+            color=SYNTH_CYAN,
+            weight=BOLD
+        )
+        coin_selection_label.to_edge(DOWN).shift(UP * 2.2)
+        self.play(FadeIn(coin_selection_label, shift=UP * 0.2))
+        self.wait(0.5)
+
         # Show UTXO selection - highlight selected ones
         selection_text = Text(
             "Wallet selects: 0.5 + 0.35 = 0.85 BTC",
@@ -85,8 +96,8 @@ class TheWallet(Scene):
             Transform(explain, selection_text),
             utxos[0].animate.set_stroke(color=SYNTH_ORANGE, width=4),
             utxos[1].animate.set_stroke(color=SYNTH_ORANGE, width=4),
-            utxos[0][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.3),
-            utxos[1][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.3),
+            utxos[0][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.08),
+            utxos[1][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.08),
             run_time=1.5
         )
 
@@ -103,7 +114,22 @@ class TheWallet(Scene):
                 run_time=0.4
             )
 
-        self.wait(1)
+        self.wait(0.5)
+
+        # Add change distribution note
+        change_text = Text(
+            "Bob will receive 0.7 BTC and Alice will receive 0.15 BTC as change",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        change_text.next_to(explain, DOWN, buff=0.3)
+
+        self.play(
+            FadeIn(change_text, shift=UP * 0.2),
+            run_time=1
+        )
+
+        self.wait(1.5)
 
         # Fade unselected UTXO
         self.play(
@@ -165,6 +191,168 @@ class TheWallet(Scene):
 
         grid.shift(DOWN * 2)
         return grid
+
+
+class TransactionStructure(Scene):
+    """
+    Transaction Structure (0:30-0:50)
+    Shows the transaction with inputs and outputs.
+    """
+
+    def construct(self):
+        # Set synthwave background
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Transaction Structure", font_size=38, color=SYNTH_CYAN)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Create central transaction box
+        tx_box = Rectangle(
+            width=6,
+            height=4,
+            color=SYNTH_CYAN,
+            stroke_width=3
+        )
+        tx_box.set_fill(color=SYNTH_CYAN, opacity=0.05)
+
+        # Transaction label
+        tx_label = Text("Transaction", font_size=24, color=SYNTH_CYAN, weight=BOLD)
+        tx_label.next_to(tx_box, UP, buff=0.3)
+
+        self.play(
+            Create(tx_box),
+            Write(tx_label),
+            run_time=1
+        )
+        self.wait(0.5)
+
+        # Create divider line
+        divider = Line(
+            tx_box.get_top() + DOWN * 2,
+            tx_box.get_bottom() + UP * 2,
+            color=SYNTH_PURPLE,
+            stroke_width=2
+        )
+
+        self.play(Create(divider), run_time=0.8)
+
+        # Inputs side label
+        inputs_label = Text("Inputs", font_size=22, color=SYNTH_GREEN, weight=BOLD)
+        inputs_label.move_to(tx_box.get_left() + RIGHT * 1.2 + UP * 1.5)
+
+        # Outputs side label
+        outputs_label = Text("Outputs", font_size=22, color=SYNTH_ORANGE, weight=BOLD)
+        outputs_label.move_to(tx_box.get_right() + LEFT * 1.2 + UP * 1.5)
+
+        self.play(
+            Write(inputs_label),
+            Write(outputs_label),
+            run_time=0.8
+        )
+        self.wait(0.5)
+
+        # Create input boxes
+        input1 = self.create_tx_box("0.5 BTC", SYNTH_GREEN)
+        input1.move_to(tx_box.get_left() + RIGHT * 1.2 + UP * 0.5)
+
+        input2 = self.create_tx_box("0.35 BTC", SYNTH_GREEN)
+        input2.move_to(tx_box.get_left() + RIGHT * 1.2 + DOWN * 0.8)
+
+        # Create output boxes
+        output1 = self.create_tx_box("0.7 BTC\n(to Bob)", SYNTH_ORANGE)
+        output1.move_to(tx_box.get_right() + LEFT * 1.4 + UP * 0.5)
+
+        output2 = self.create_tx_box("0.15 BTC\n(change)", SYNTH_ORANGE)
+        output2.move_to(tx_box.get_right() + LEFT * 1.4 + DOWN * 0.8)
+
+        # Animate inputs appearing
+        self.play(
+            FadeIn(input1, shift=RIGHT * 0.3),
+            run_time=0.7
+        )
+        self.wait(0.2)
+        self.play(
+            FadeIn(input2, shift=RIGHT * 0.3),
+            run_time=0.7
+        )
+        self.wait(0.5)
+
+        # Animate outputs appearing
+        self.play(
+            FadeIn(output1, shift=LEFT * 0.3),
+            run_time=0.7
+        )
+        self.wait(0.2)
+        self.play(
+            FadeIn(output2, shift=LEFT * 0.3),
+            run_time=0.7
+        )
+        self.wait(1)
+
+        # Show flow from inputs to outputs
+        arrow1 = Arrow(
+            input1.get_right(),
+            output1.get_left(),
+            color=SYNTH_PEACH,
+            buff=0.1,
+            stroke_width=2,
+            max_tip_length_to_length_ratio=0.15
+        )
+        arrow2 = Arrow(
+            input2.get_right(),
+            output1.get_left(),
+            color=SYNTH_PEACH,
+            buff=0.1,
+            stroke_width=2,
+            max_tip_length_to_length_ratio=0.15
+        )
+        arrow3 = Arrow(
+            input2.get_right(),
+            output2.get_left(),
+            color=SYNTH_PEACH,
+            buff=0.1,
+            stroke_width=2,
+            max_tip_length_to_length_ratio=0.15
+        )
+
+        self.play(
+            GrowArrow(arrow1),
+            GrowArrow(arrow2),
+            GrowArrow(arrow3),
+            run_time=1.2
+        )
+        self.wait(1)
+
+        # Add summary text at the bottom
+        summary = Text(
+            "Total In: 0.85 BTC → Total Out: 0.85 BTC (0.7 to Bob + 0.15 change)",
+            font_size=20,
+            color=SYNTH_CYAN
+        )
+        summary.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(Write(summary), run_time=1.5)
+        self.wait(2)
+
+    def create_tx_box(self, text, color):
+        """Create a small box for input/output with text"""
+        # Create text first to size box appropriately
+        label = Text(text, font_size=18, color=color)
+
+        # Box around text
+        box = SurroundingRectangle(
+            label,
+            color=color,
+            stroke_width=2,
+            buff=0.15,
+            corner_radius=0.05
+        )
+        box.set_fill(color=color, opacity=0.1)
+
+        return VGroup(box, label)
 
 
 class TransactionConstruction(Scene):
