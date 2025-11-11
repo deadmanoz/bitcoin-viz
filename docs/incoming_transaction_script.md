@@ -308,8 +308,8 @@ Consensus::CheckTxInputs(tx, state, m_view)  ✓
 - Math overlay showing example transaction:
   ```
   Inputs:  0.5 + 0.35 = 0.85 BTC
-  Outputs: 0.7 + 0.1 = 0.8 BTC (payment + change)
-  Fee:     0.85 - 0.8 = 0.05 BTC ✓
+  Outputs: 0.7 + 0.14975 = 0.84975 BTC (payment + change)
+  Fee:     0.85 - 0.84975 = 0.00025 BTC ✓
   ```
 - ✓ Inputs ≥ Outputs (no value inflation)
 
@@ -357,8 +357,8 @@ if (nFeeRate < m_pool.GetMinFee()) {
 - Fee rate bar chart showing three values:
   - **Policy floor**: 0.1 sat/vB (DEFAULT_MIN_RELAY_TX_FEE)
   - **Mempool minimum** (dynamic): 5 sat/vB (example - rises when mempool is full)
-  - **Our example tx**: 20,000 sat/vB (0.05 BTC fee / 250 vB)
-- ✓ Our transaction easily exceeds both thresholds
+  - **Our example tx**: 100 sat/vB (25,000 sat / 250 vB)
+- ✓ Our transaction exceeds both thresholds (priority transaction)
 
 **Narration:**
 > "Sixteen rapid checks ensure the transaction is well-formed, economically rational, and meets network standards. Only after passing all these do we proceed to the expensive cryptographic validation."
@@ -392,17 +392,17 @@ if (!m_conflicts.empty()) {
 ```
 Original Transaction          Replacement Transaction
 ─────────────────────        ───────────────────────
-Fee:     0.05 BTC             Fee:     0.08 BTC  ✓
+Fee:     0.0001 BTC           Fee:     0.0002 BTC  ✓
 Feerate: 50 sat/vB            Feerate: 80 sat/vB ✓
 Size:    200 vB               Size:    250 vB
 ```
-Note: These are example values for illustration
+Note: Realistic fee values for a typical RBF scenario
 
 **Checks animated:**
 1. ✓ BIP 125 signaling (sequence ≤ MAX_BIP125_RBF_SEQUENCE = 0xfffffffd)
    - Reference: src/util/rbf.h:12
-2. ✓ Higher absolute fee (0.08 BTC > 0.05 BTC in our example)
-3. ✓ Higher fee rate (80 sat/vB > 50 sat/vB in our example)
+2. ✓ Higher absolute fee (0.0002 > 0.0001 BTC)
+3. ✓ Higher fee rate (80 > 50 sat/vB)
 4. ✓ No new unconfirmed inputs
 5. ✓ Pays for bandwidth (extra fee ≥ incremental relay fee × size)
 
@@ -576,9 +576,9 @@ GetMainSignals().TransactionAddedToMempool(
   ```
   ┌─ Mempool Entry ────────┐
   │ txid:   abc123...       │
-  │ Fee:    0.05 BTC        │
+  │ Fee:    0.00025 BTC     │
   │ Size:   250 vB          │
-  │ Rate:   20000 sat/vB    │
+  │ Rate:   100 sat/vB      │
   │ Time:   14:23:15 UTC    │
   │ Ancestors: 2            │
   │ Descendants: 0          │
