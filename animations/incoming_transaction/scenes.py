@@ -11,6 +11,8 @@ Runtime: ~2-3 minutes (condensed version of 14-minute script)
 
 from manim import *
 import numpy as np
+import sys
+sys.path.append("..")
 from common import *
 
 
