@@ -18,17 +18,62 @@ bitcoin-viz/
 └── media/              # Rendered videos (git-ignored)
 ```
 
-## Setup
+## Quick Start
+
+This project uses [just](https://github.com/casey/just) as a command runner and a Python virtual environment to keep dependencies isolated.
 
 ```bash
+# First time setup - creates venv and installs dependencies
+just setup
+
+# Render the POC animations at preview quality
+just preview-all
+
+# See all available commands
+just --list
+```
+
+## Common Commands
+
+```bash
+# Setup and installation
+just setup              # Create venv and install dependencies
+just install            # Update dependencies (venv must exist)
+
+# Rendering animations
+just preview SceneName [file]     # Quick preview (480p)
+just render SceneName [file]      # Medium quality (720p)
+just render-hq SceneName [file]   # High quality (1080p)
+just render-4k SceneName [file]   # 4K quality (2160p)
+
+# Utilities
+just preview-all        # Render all POC scenes
+just list-scenes [file] # List available scenes in a file
+just stats              # Show project statistics
+just clean              # Remove rendered media files
+just clean-all          # Remove media + venv
+
+# Examples
+just preview BitcoinVehicleIntro
+just render TransactionJourney
+just list-scenes bitcoin_vehicle_intro
+```
+
+## Manual Usage (if you prefer not to use just)
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
 pip install -r requirements.txt
 
 # Render an animation
-manim -pql animations/scene_name.py SceneName
+manim -ql animations/bitcoin_vehicle_intro.py BitcoinVehicleIntro
 ```
 
-## Quality Flags
+## Quality Flags (for manual manim usage)
 
 - `-ql`: Low quality (480p) - fast preview
 - `-qm`: Medium quality (720p)
