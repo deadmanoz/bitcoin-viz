@@ -131,13 +131,183 @@ class TheWallet(Scene):
 
         self.wait(1.5)
 
-        # Fade unselected UTXO
+        # Fade unselected UTXO and other elements
         self.play(
             utxos[2].animate.set_opacity(0.3),
+            FadeOut(grid),
+            FadeOut(wallet_label),
+            FadeOut(coin_selection_label),
+            run_time=1
+        )
+        self.wait(0.5)
+
+        # === Transaction Structure Visualization ===
+        # Transform the text to show we're building the transaction
+        tx_build_text = Text(
+            "Building Transaction",
+            font_size=24,
+            color=SYNTH_CYAN
+        )
+        tx_build_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, tx_build_text),
+            FadeOut(change_text),
+            run_time=0.8
+        )
+        self.wait(0.5)
+
+        # Move selected UTXOs to the left side
+        self.play(
+            utxos[0].animate.move_to(LEFT * 4 + UP * 0.8).scale(0.7),
+            utxos[1].animate.move_to(LEFT * 4 + DOWN * 0.8).scale(0.7),
+            run_time=1
+        )
+        self.wait(0.3)
+
+        # Create central pool (glowing circle)
+        central_pool = Circle(radius=0.8, color=SYNTH_CYAN, stroke_width=3)
+        central_pool.set_fill(color=SYNTH_CYAN, opacity=0.2)
+
+        pool_label = Text("0.85 BTC", font_size=20, color=SYNTH_CYAN, weight=BOLD)
+        pool_label.move_to(central_pool)
+
+        pool_group = VGroup(central_pool, pool_label)
+
+        self.play(
+            FadeIn(central_pool, scale=0.3),
             run_time=0.8
         )
 
+        # Break down UTXOs into particles
+        particles1 = self.create_particles(utxos[0].get_center(), 15)
+        particles2 = self.create_particles(utxos[1].get_center(), 15)
+
+        # Animate particles flowing from UTXOs to center
+        self.play(
+            *[particle.animate.move_to(central_pool.get_center() +
+                np.array([np.random.uniform(-0.3, 0.3), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles1],
+            *[particle.animate.move_to(central_pool.get_center() +
+                np.array([np.random.uniform(-0.3, 0.3), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles2],
+            FadeOut(utxos[0]),
+            FadeOut(utxos[1]),
+            run_time=1.5
+        )
+
+        # Show pool label with pulsing effect
+        self.play(
+            Write(pool_label),
+            central_pool.animate.set_fill(opacity=0.3),
+            run_time=0.5
+        )
+        self.play(
+            central_pool.animate.set_fill(opacity=0.15),
+            run_time=0.5
+        )
+        self.wait(0.5)
+
+        # Create output boxes on the right
+        output1_box = self.create_output_box("0.7 BTC", "(to Bob)", SYNTH_ORANGE)
+        output1_box.move_to(RIGHT * 4 + UP * 0.8)
+
+        output2_box = self.create_output_box("0.15 BTC", "(change)", SYNTH_ORANGE)
+        output2_box.move_to(RIGHT * 4 + DOWN * 0.8)
+
+        # Split particles and flow to outputs
+        # About 20 particles go to output1, 5 to output2 (proportional to value)
+        particles_to_output1 = particles1[:10] + particles2[:10]
+        particles_to_output2 = particles1[10:] + particles2[10:]
+
+        self.play(
+            *[particle.animate.move_to(output1_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_output1],
+            *[particle.animate.move_to(output2_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_output2],
+            FadeOut(pool_label),
+            central_pool.animate.set_fill(opacity=0.05),
+            run_time=1.5
+        )
+
+        # Coalesce particles into output boxes
+        self.play(
+            FadeIn(output1_box, scale=0.5),
+            FadeIn(output2_box, scale=0.5),
+            *[FadeOut(particle) for particle in particles1 + particles2],
+            run_time=1
+        )
+
+        self.wait(0.5)
+
+        # Add "Inputs" and "Outputs" labels
+        inputs_label = Text("Inputs", font_size=20, color=SYNTH_GREEN, weight=BOLD)
+        inputs_label.move_to(LEFT * 4 + UP * 2)
+
+        outputs_label = Text("Outputs", font_size=20, color=SYNTH_ORANGE, weight=BOLD)
+        outputs_label.move_to(RIGHT * 4 + UP * 2)
+
+        self.play(
+            Write(inputs_label),
+            Write(outputs_label),
+            run_time=0.8
+        )
+
+        # Final summary
+        final_text = Text(
+            "Transaction ready: 0.85 BTC in → 0.85 BTC out",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        final_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, final_text),
+            run_time=1
+        )
+
         self.wait(2)
+
+    def create_particles(self, center_pos, count):
+        """Create small particle dots for flow animation"""
+        particles = VGroup()
+        for _ in range(count):
+            # Create small glowing dots
+            dot = Dot(
+                point=center_pos + np.array([
+                    np.random.uniform(-0.3, 0.3),
+                    np.random.uniform(-0.3, 0.3),
+                    0
+                ]),
+                radius=0.05,
+                color=SYNTH_CYAN
+            )
+            dot.set_fill(color=SYNTH_CYAN, opacity=0.8)
+            particles.add(dot)
+            self.add(dot)
+        return particles
+
+    def create_output_box(self, amount, label, color):
+        """Create an output box with amount and label"""
+        amount_text = Text(amount, font_size=20, color=color, weight=BOLD)
+        label_text = Text(label, font_size=14, color=color)
+        label_text.set_opacity(0.8)
+
+        text_group = VGroup(amount_text, label_text).arrange(DOWN, buff=0.1)
+
+        # Box around text
+        box = SurroundingRectangle(
+            text_group,
+            color=color,
+            stroke_width=2,
+            buff=0.2,
+            corner_radius=0.1
+        )
+        box.set_fill(color=color, opacity=0.15)
+
+        return VGroup(box, text_group)
 
     def create_utxo_hexagon(self, data):
         """Create a hexagonal UTXO with data labels (larger size)"""
@@ -191,168 +361,6 @@ class TheWallet(Scene):
 
         grid.shift(DOWN * 2)
         return grid
-
-
-class TransactionStructure(Scene):
-    """
-    Transaction Structure (0:30-0:50)
-    Shows the transaction with inputs and outputs.
-    """
-
-    def construct(self):
-        # Set synthwave background
-        self.camera.background_color = SYNTH_BG
-
-        # Scene title
-        title = Text("Transaction Structure", font_size=38, color=SYNTH_CYAN)
-        title.to_edge(UP)
-        self.play(Write(title))
-        self.wait(0.5)
-
-        # Create central transaction box
-        tx_box = Rectangle(
-            width=6,
-            height=4,
-            color=SYNTH_CYAN,
-            stroke_width=3
-        )
-        tx_box.set_fill(color=SYNTH_CYAN, opacity=0.05)
-
-        # Transaction label
-        tx_label = Text("Transaction", font_size=24, color=SYNTH_CYAN, weight=BOLD)
-        tx_label.next_to(tx_box, UP, buff=0.3)
-
-        self.play(
-            Create(tx_box),
-            Write(tx_label),
-            run_time=1
-        )
-        self.wait(0.5)
-
-        # Create divider line
-        divider = Line(
-            tx_box.get_top() + DOWN * 2,
-            tx_box.get_bottom() + UP * 2,
-            color=SYNTH_PURPLE,
-            stroke_width=2
-        )
-
-        self.play(Create(divider), run_time=0.8)
-
-        # Inputs side label
-        inputs_label = Text("Inputs", font_size=22, color=SYNTH_GREEN, weight=BOLD)
-        inputs_label.move_to(tx_box.get_left() + RIGHT * 1.2 + UP * 1.5)
-
-        # Outputs side label
-        outputs_label = Text("Outputs", font_size=22, color=SYNTH_ORANGE, weight=BOLD)
-        outputs_label.move_to(tx_box.get_right() + LEFT * 1.2 + UP * 1.5)
-
-        self.play(
-            Write(inputs_label),
-            Write(outputs_label),
-            run_time=0.8
-        )
-        self.wait(0.5)
-
-        # Create input boxes
-        input1 = self.create_tx_box("0.5 BTC", SYNTH_GREEN)
-        input1.move_to(tx_box.get_left() + RIGHT * 1.2 + UP * 0.5)
-
-        input2 = self.create_tx_box("0.35 BTC", SYNTH_GREEN)
-        input2.move_to(tx_box.get_left() + RIGHT * 1.2 + DOWN * 0.8)
-
-        # Create output boxes
-        output1 = self.create_tx_box("0.7 BTC\n(to Bob)", SYNTH_ORANGE)
-        output1.move_to(tx_box.get_right() + LEFT * 1.4 + UP * 0.5)
-
-        output2 = self.create_tx_box("0.15 BTC\n(change)", SYNTH_ORANGE)
-        output2.move_to(tx_box.get_right() + LEFT * 1.4 + DOWN * 0.8)
-
-        # Animate inputs appearing
-        self.play(
-            FadeIn(input1, shift=RIGHT * 0.3),
-            run_time=0.7
-        )
-        self.wait(0.2)
-        self.play(
-            FadeIn(input2, shift=RIGHT * 0.3),
-            run_time=0.7
-        )
-        self.wait(0.5)
-
-        # Animate outputs appearing
-        self.play(
-            FadeIn(output1, shift=LEFT * 0.3),
-            run_time=0.7
-        )
-        self.wait(0.2)
-        self.play(
-            FadeIn(output2, shift=LEFT * 0.3),
-            run_time=0.7
-        )
-        self.wait(1)
-
-        # Show flow from inputs to outputs
-        arrow1 = Arrow(
-            input1.get_right(),
-            output1.get_left(),
-            color=SYNTH_PEACH,
-            buff=0.1,
-            stroke_width=2,
-            max_tip_length_to_length_ratio=0.15
-        )
-        arrow2 = Arrow(
-            input2.get_right(),
-            output1.get_left(),
-            color=SYNTH_PEACH,
-            buff=0.1,
-            stroke_width=2,
-            max_tip_length_to_length_ratio=0.15
-        )
-        arrow3 = Arrow(
-            input2.get_right(),
-            output2.get_left(),
-            color=SYNTH_PEACH,
-            buff=0.1,
-            stroke_width=2,
-            max_tip_length_to_length_ratio=0.15
-        )
-
-        self.play(
-            GrowArrow(arrow1),
-            GrowArrow(arrow2),
-            GrowArrow(arrow3),
-            run_time=1.2
-        )
-        self.wait(1)
-
-        # Add summary text at the bottom
-        summary = Text(
-            "Total In: 0.85 BTC → Total Out: 0.85 BTC (0.7 to Bob + 0.15 change)",
-            font_size=20,
-            color=SYNTH_CYAN
-        )
-        summary.to_edge(DOWN).shift(UP * 0.5)
-
-        self.play(Write(summary), run_time=1.5)
-        self.wait(2)
-
-    def create_tx_box(self, text, color):
-        """Create a small box for input/output with text"""
-        # Create text first to size box appropriately
-        label = Text(text, font_size=18, color=color)
-
-        # Box around text
-        box = SurroundingRectangle(
-            label,
-            color=color,
-            stroke_width=2,
-            buff=0.15,
-            corner_radius=0.05
-        )
-        box.set_fill(color=color, opacity=0.1)
-
-        return VGroup(box, label)
 
 
 class TransactionConstruction(Scene):
