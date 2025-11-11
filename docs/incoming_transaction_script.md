@@ -751,11 +751,6 @@ Explore More:
 - Optional timing overlay: "PreChecks: 0.8ms, ScriptChecks: 12.3ms"
 - Validation cache hit rate: "Cache hits: 87%"
 
-### Interactive Elements (for web version)
-- Clickable code snippets link to GitHub
-- Hoverable terms show definitions
-- Pause-and-explore mode reveals full data structures
-
 ---
 
 ## Assets Needed
@@ -806,27 +801,6 @@ Explore More:
 - Audio descriptions for complex visuals
 - Companion blog post with static diagrams
 - Code snippets available in text format
-
----
-
-## Script Variants
-
-### Short Version (5 minutes)
-- Skip Scene 11 (rejection path)
-- Condense PreChecks to 6 most important checks
-- Brief RBF mention without full scenario
-
-### Live Coding Version (20 minutes)
-- Actual Bitcoin Core compilation
-- GDB debugging session showing validation
-- Real transaction from testnet
-- Log file analysis
-
-### Workshop Version (45 minutes)
-- Hands-on exercises
-- Modify minRelayTxFee and observe behavior
-- Construct transactions that fail each check
-- Explore mempool with bitcoin-cli
 
 ---
 
