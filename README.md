@@ -1,10 +1,10 @@
 # Bitcoin Visualization Project
 
-Inspired by 3Blue1Brown, this project creates educational animations explaining how Bitcoin Core works by peeling back layers of abstraction.
+Inspired by 3Blue1Brown, this project creates educational animations explaining how Bitcoin works by peeling back layers of abstraction.
 
 ## Concept
 
-Using the metaphor of a vehicle/car to represent Bitcoin Core, we visually transform between high-level concepts and technical implementation details.
+Using a synthwave/cyberpunk visual style with neon colors on dark backgrounds, we explore Bitcoin's technical internals through smooth, engaging animations. Starting with the transaction lifecycle, we'll progressively dive deeper into consensus, networking, and cryptographic mechanisms.
 
 ## Structure
 
@@ -54,9 +54,9 @@ just clean              # Remove rendered media files
 just clean-all          # Remove media + venv
 
 # Examples
-just preview BitcoinVehicleIntro
-just render TransactionJourney
-just list-scenes bitcoin_vehicle_intro
+just preview TransactionLifecycleIntro transaction_lifecycle
+just preview Act1_TheWallet transaction_lifecycle
+just list-scenes transaction_lifecycle
 ```
 
 ## Manual Usage (if you prefer not to use just)
@@ -70,7 +70,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Render an animation
-manim -ql animations/bitcoin_vehicle_intro.py BitcoinVehicleIntro
+manim -ql animations/transaction_lifecycle.py TransactionLifecycleIntro
 ```
 
 ## Quality Flags (for manual manim usage)

@@ -31,7 +31,7 @@ install:
     echo "✓ Dependencies installed"
 
 # Render animation at low quality (preview) - usage: just preview SceneName [file]
-preview scene_name file="bitcoin_vehicle_intro":
+preview scene_name file="transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -43,7 +43,7 @@ preview scene_name file="bitcoin_vehicle_intro":
     manim -ql animations/{{file}}.py {{scene_name}}
 
 # Render animation at medium quality (720p) - usage: just render SceneName [file]
-render scene_name file="bitcoin_vehicle_intro":
+render scene_name file="transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -55,7 +55,7 @@ render scene_name file="bitcoin_vehicle_intro":
     manim -qm animations/{{file}}.py {{scene_name}}
 
 # Render animation at high quality (1080p) - usage: just render-hq SceneName [file]
-render-hq scene_name file="bitcoin_vehicle_intro":
+render-hq scene_name file="transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -67,7 +67,7 @@ render-hq scene_name file="bitcoin_vehicle_intro":
     manim -qh animations/{{file}}.py {{scene_name}}
 
 # Render animation at 4K quality - usage: just render-4k SceneName [file]
-render-4k scene_name file="bitcoin_vehicle_intro":
+render-4k scene_name file="transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -80,11 +80,13 @@ render-4k scene_name file="bitcoin_vehicle_intro":
 
 # Render all POC scenes at preview quality
 preview-all:
-    @just preview BitcoinVehicleIntro
-    @just preview TransactionJourney
+    @just preview TransactionLifecycleIntro transaction_lifecycle
+    @just preview Act1_TheWallet transaction_lifecycle
+    @just preview Act1_TransactionConstruction transaction_lifecycle
+    @just preview Act2_InitialBroadcast transaction_lifecycle
 
 # List all available scenes in a file - usage: just list-scenes [file]
-list-scenes file="bitcoin_vehicle_intro":
+list-scenes file="transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
