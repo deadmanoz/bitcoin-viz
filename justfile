@@ -91,6 +91,33 @@ preview-all:
     @just preview BlockPropagation act5_confirmation
     @just preview ChainExtension act5_confirmation
 
+# Render all incoming transaction scenes at preview quality
+preview-incoming:
+    @just preview IncomingTransactionIntro incoming_transaction
+    @just preview NetworkLayer incoming_transaction
+    @just preview DownloadManagement incoming_transaction
+    @just preview ValidationPipeline incoming_transaction
+    @just preview PreChecks incoming_transaction
+    @just preview MempoolAdmission incoming_transaction
+
+# Render complete incoming transaction sequence
+render-incoming quality="ql":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d "venv" ]; then
+        echo "Error: venv not found. Run 'just setup' first."
+        exit 1
+    fi
+    export PATH="./venv/bin:$PATH"
+    echo "Rendering incoming transaction processing at {{quality}}..."
+    manim -{{quality}} animations/incoming_transaction.py IncomingTransactionIntro
+    manim -{{quality}} animations/incoming_transaction.py NetworkLayer
+    manim -{{quality}} animations/incoming_transaction.py DownloadManagement
+    manim -{{quality}} animations/incoming_transaction.py ValidationPipeline
+    manim -{{quality}} animations/incoming_transaction.py PreChecks
+    manim -{{quality}} animations/incoming_transaction.py MempoolAdmission
+    echo "✓ All incoming transaction scenes rendered"
+
 # Render complete transaction lifecycle (all acts)
 render-lifecycle quality="ql":
     #!/usr/bin/env bash
