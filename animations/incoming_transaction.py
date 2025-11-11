@@ -154,27 +154,42 @@ class NetworkLayer(Scene):
         self.wait(0.5)
 
         # Show code overlay
-        code = Code(
-            code="""// src/net_processing.cpp:3415
-void PeerManagerImpl::ProcessMessage(
-    CNode& pfrom,
-    const std::string& msg_type,  // "tx"
-    DataStream& vRecv
-) {""",
-            language="cpp",
-            font="Monospace",
-            font_size=16,
-            background="rectangle",
-            background_stroke_width=1,
-            background_stroke_color=SYNTH_CYAN,
-            insert_line_no=False,
-            style="monokai"
+        code_lines = [
+            "// src/net_processing.cpp:3415",
+            "void PeerManagerImpl::ProcessMessage(",
+            "    CNode& pfrom,",
+            "    const std::string& msg_type,  // \"tx\"",
+            "    DataStream& vRecv",
+            ") {"
+        ]
+
+        code_text = VGroup()
+        for line in code_lines:
+            line_text = Text(
+                line,
+                font="Monospace",
+                font_size=16,
+                color=SYNTH_CYAN
+            )
+            code_text.add(line_text)
+
+        code_text.arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+
+        # Background box
+        code_bg = Rectangle(
+            width=code_text.width + 0.6,
+            height=code_text.height + 0.4,
+            color=SYNTH_CYAN,
+            fill_opacity=0.1,
+            stroke_width=2
         )
-        code.scale(0.7)
-        code.to_edge(DOWN).shift(UP * 0.3)
+        code_bg.move_to(code_text.get_center())
+
+        code_group = VGroup(code_bg, code_text)
+        code_group.to_edge(DOWN).shift(UP * 0.3)
 
         self.play(
-            FadeIn(code, shift=UP),
+            FadeIn(code_group, shift=UP),
             run_time=1
         )
         self.wait(2)
