@@ -84,6 +84,12 @@ preview-all:
     @just preview Act1_TheWallet transaction_lifecycle
     @just preview Act1_TransactionConstruction transaction_lifecycle
     @just preview Act2_InitialBroadcast transaction_lifecycle
+    @just preview Act2_NodeValidation transaction_lifecycle
+    @just preview Act3_MempoolWaiting transaction_lifecycle
+    @just preview Act4_BlockTemplate transaction_lifecycle
+    @just preview Act4_Mining transaction_lifecycle
+    @just preview Act5_BlockPropagation transaction_lifecycle
+    @just preview Act5_ChainExtension transaction_lifecycle
 
 # List all available scenes in a file - usage: just list-scenes [file]
 list-scenes file="transaction_lifecycle":

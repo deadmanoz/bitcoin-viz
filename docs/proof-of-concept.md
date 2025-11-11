@@ -108,14 +108,23 @@ Demonstrates P2P network propagation:
 # Quick preview of intro
 just preview TransactionLifecycleIntro transaction_lifecycle
 
+# Preview all 10 scenes at once
+just preview-all
+
 # Preview individual acts
 just preview Act1_TheWallet transaction_lifecycle
-just preview Act1_TransactionConstruction transaction_lifecycle
-just preview Act2_InitialBroadcast transaction_lifecycle
+just preview Act2_NodeValidation transaction_lifecycle
+just preview Act3_MempoolWaiting transaction_lifecycle
+just preview Act4_Mining transaction_lifecycle
+just preview Act5_ChainExtension transaction_lifecycle
 
 # Higher quality renders
-just render Act1_TheWallet transaction_lifecycle          # 720p
-just render-hq Act1_TheWallet transaction_lifecycle       # 1080p
+just render Act4_Mining transaction_lifecycle             # 720p
+just render-hq Act5_ChainExtension transaction_lifecycle  # 1080p
+just render-4k TransactionLifecycleIntro transaction_lifecycle  # 4K
+
+# List all available scenes
+just list-scenes
 ```
 
 ### Using manim directly (alternative)
@@ -181,24 +190,135 @@ media/videos/transaction_lifecycle/
 - Titles: Large font (38-52), top of screen
 - All text with slight glow for neon effect
 
-## Full Series Plan
+## Full Series - COMPLETE! ✅
 
-The POC validates the approach for a 5-act structure:
+All 5 acts of the transaction lifecycle have been implemented:
 
-**Act 1: Creation** (Wallet + Transaction Construction) - ✅ Implemented
-**Act 2: Propagation** (Broadcast + Validation) - ✅ Broadcast implemented, Validation pending
-**Act 3: Mempool** (Waiting area + Fee markets) - Pending
-**Act 4: Mining** (Block template + Proof-of-work) - Pending
-**Act 5: Confirmation** (Block relay + Chain extension) - Pending
+**Act 1: Creation** (~1 minute)
+- ✅ Act1_TheWallet - UTXO selection
+- ✅ Act1_TransactionConstruction - Packet assembly with scripts & signatures
 
-Each act = ~1 minute, total runtime ~5 minutes for full lifecycle video.
+**Act 2: Propagation** (~1 minute)
+- ✅ Act2_InitialBroadcast - P2P network propagation
+- ✅ Act2_NodeValidation - Holographic validation checklist
+
+**Act 3: Mempool** (~45 seconds)
+- ✅ Act3_MempoolWaiting - Fee-rate sorted waiting area
+
+**Act 4: Mining** (~1 minute)
+- ✅ Act4_BlockTemplate - Transaction selection & coinbase
+- ✅ Act4_Mining - Hash attempts & block discovery
+
+**Act 5: Confirmation** (~1 minute)
+- ✅ Act5_BlockPropagation - Compact block relay
+- ✅ Act5_ChainExtension - Chain growth & 6 confirmations
+
+Total: 10 individual scenes, ~5 minutes runtime when combined.
+
+### 5. Act2_NodeValidation Scene
+
+Shows transaction validation at a node:
+
+1. **Node Charlie**: Large hexagonal node with orange corona
+2. **Packet arrival**: Transaction packet arrives at node
+3. **Validation checklist**: 8-item holographic checklist appears
+4. **Automated checking**: Each item validates with green checkmark & particles
+5. **Success barrier**: Cyan flash when all checks pass
+
+**Key accomplishments**:
+- Holographic UI aesthetic
+- Progressive validation visualization
+- Particle effects for success feedback
+- Makes abstract validation concrete
+
+### 6. Act3_MempoolWaiting Scene
+
+Mempool as a waiting area:
+
+1. **Mempool container**: Orange rounded rectangle
+2. **Fee-rate sorting**: 7 transactions stacked by fee (25 down to 2 sat/vB)
+3. **Brightness coding**: Higher fees glow brighter
+4. **Alice's transaction**: Highlighted at 10 sat/vB (mid-tier)
+5. **Network replication**: Mini network shows propagation continues
+
+**Key accomplishments**:
+- Visual fee market hierarchy
+- Clear positioning in priority queue
+- Stats overlay for selected transaction
+- Conveys "waiting but not idle" concept
+
+### 7. Act4_BlockTemplate Scene
+
+Miner assembling a block:
+
+1. **Miner node**: Large hexagon with orange corona (Iceland)
+2. **Block template**: Empty container filling up
+3. **Transaction selection**: 6 transactions fly from mempool to block
+4. **Coinbase transaction**: Special gold hexagon at top with reward "6.25 BTC + fees"
+5. **Capacity indicator**: Block fills to ~3.9M weight units
+
+**Key accomplishments**:
+- Shows miner's active role
+- Coinbase transaction clearly differentiated
+- Block capacity concept visualized
+- Sets up mining process
+
+### 8. Act4_Mining Scene
+
+The mining process:
+
+1. **Block header display**: Shows Previous Hash, Merkle Root, Timestamp, Nonce
+2. **Rapid hash attempts**: 20 cycles of purple lightning flashes
+3. **Nonce updates**: Visual counter incrementing rapidly
+4. **Success explosion**: Green particle burst in all directions
+5. **Block 870,000 born**: Celebration text
+
+**Key accomplishments**:
+- Conveys computational intensity visually
+- Makes abstract hashing tangible
+- Dramatic "eureka moment"
+- High energy scene matches topic
+
+### 9. Act5_BlockPropagation Scene
+
+Block relay through network:
+
+1. **Block as cube**: 3D-rotated cube representation
+2. **Network topology**: 12 nodes arranged in circle
+3. **Wave propagation**: Block sends compact messages in 3 waves
+4. **Validation cascade**: Nodes turn green as they validate
+5. **Quick checklist**: 5-item validation shown
+
+**Key accomplishments**:
+- 3D cube adds visual variety
+- Optimized relay concept (compact blocks)
+- Fast propagation compared to individual transactions
+- Network-wide acceptance visualized
+
+### 10. Act5_ChainExtension Scene
+
+Final confirmation:
+
+1. **Blockchain perspective**: 7 blocks extending into distance with z-scaling
+2. **New block arrival**: Block 870,000 (green) extends chain
+3. **Transaction highlight**: Alice's tx indicated with arrow
+4. **Confirmation accumulation**: 5 more blocks stack up
+5. **6 confirmations**: Final state with bright glow on Alice's block
+6. **Journey summary**: Text recap of full lifecycle
+
+**Key accomplishments**:
+- Perspective creates depth and scale
+- Confirmation counter builds tension/resolution
+- "Transaction final" provides closure
+- Ties back to beginning
 
 ## Next Steps for Development
 
-### Immediate
-1. **Complete Act 2**: Node validation scene with holographic checklist
-2. **Complete Act 3**: Mempool visualization with fee-rate sorting
-3. **Complete Acts 4-5**: Mining and confirmation scenes
+### Immediate - Scene Compilation
+1. **Stitch scenes together**: Create single 5-minute video from all acts
+2. **Add transitions**: Smooth fade/wipe between acts
+3. **Timing adjustments**: Fine-tune pacing with narration in mind
+4. **Title cards**: Optional act separators
 
 ### Enhancements
 1. **Voiceover integration**: Add narration timing marks

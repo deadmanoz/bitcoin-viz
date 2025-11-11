@@ -650,3 +650,954 @@ class TransactionLifecycleIntro(Scene):
         self.play(
             *[FadeOut(mob) for mob in self.mobjects]
         )
+
+
+class Act2_NodeValidation(Scene):
+    """
+    ACT 2: PROPAGATION - Node Validation (1:20-2:15)
+    Shows Node Charlie validating the transaction through a checklist.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Node Validation", font_size=38, color=SYNTH_CYAN)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Show Node Charlie as a hexagonal structure
+        node = RegularPolygon(n=6, radius=1.5, color=SYNTH_CYAN, stroke_width=3)
+        node.set_fill(color=SYNTH_CYAN, opacity=0.15)
+        node.shift(LEFT * 3)
+
+        node_label = Text("Node Charlie", font_size=24, color=SYNTH_CYAN)
+        node_label.next_to(node, DOWN, buff=0.3)
+
+        self.play(
+            DrawBorderThenFill(node),
+            Write(node_label)
+        )
+        self.wait(0.5)
+
+        # Transaction packet arriving
+        tx_packet = Dot(radius=0.2, color=SYNTH_GREEN)
+        tx_packet.move_to(LEFT * 7 + UP)
+
+        arrival_text = Text(
+            "Transaction packet arriving...",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        arrival_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            FadeIn(tx_packet, scale=0.3),
+            Write(arrival_text)
+        )
+
+        # Packet moves to node
+        self.play(
+            tx_packet.animate.move_to(node.get_center()),
+            run_time=1
+        )
+        self.wait(0.3)
+
+        # Validation gauntlet text
+        gauntlet_text = Text(
+            "Validation Gauntlet",
+            font_size=24,
+            color=SYNTH_ORANGE,
+            weight=BOLD
+        )
+        gauntlet_text.move_to(arrival_text)
+
+        self.play(Transform(arrival_text, gauntlet_text))
+        self.wait(0.5)
+
+        # Create holographic checklist
+        checks = [
+            "Format & size limits",
+            "Inputs reference valid UTXOs",
+            "Signatures valid",
+            "Input amounts ≥ outputs",
+            "No double-spending",
+            "Meets dust threshold",
+            "Replace-By-Fee rules",
+            "Local policy rules",
+        ]
+
+        checklist = VGroup()
+        for i, check in enumerate(checks):
+            # Checkbox
+            box = Square(side_length=0.25, color=SYNTH_ORANGE, stroke_width=2)
+            box.set_fill(color=SYNTH_ORANGE, opacity=0.1)
+
+            # Check text
+            text = Text(check, font_size=16, color=SYNTH_ORANGE)
+            text.next_to(box, RIGHT, buff=0.2)
+
+            check_item = VGroup(box, text)
+            checklist.add(check_item)
+
+        checklist.arrange(DOWN, aligned_edge=LEFT, buff=0.2)
+        checklist.scale(0.9)
+        checklist.next_to(node, RIGHT, buff=1)
+
+        # Show checklist appearing
+        for check_item in checklist:
+            self.play(
+                FadeIn(check_item, shift=LEFT * 0.3),
+                run_time=0.3
+            )
+
+        self.wait(0.5)
+
+        # Validate each item
+        for i, check_item in enumerate(checklist):
+            box = check_item[0]
+
+            # Flash orange
+            self.play(
+                box.animate.set_fill(opacity=0.5),
+                run_time=0.15
+            )
+
+            # Add checkmark
+            checkmark = Text("✓", font_size=20, color=SYNTH_GREEN, weight=BOLD)
+            checkmark.move_to(box)
+
+            self.play(
+                box.animate.set_stroke(color=SYNTH_GREEN).set_fill(color=SYNTH_GREEN, opacity=0.3),
+                FadeIn(checkmark, scale=0.5),
+                run_time=0.25
+            )
+
+            # Particle effect
+            particles = VGroup(*[
+                Dot(radius=0.05, color=SYNTH_GREEN).move_to(box.get_center())
+                for _ in range(6)
+            ])
+
+            particle_anims = []
+            for j, particle in enumerate(particles):
+                angle = j * TAU / 6
+                target = box.get_center() + np.array([np.cos(angle), np.sin(angle), 0]) * 0.5
+                particle_anims.append(
+                    particle.animate.move_to(target).set_opacity(0)
+                )
+
+            if i < len(checklist) - 1:
+                self.play(*particle_anims, run_time=0.3)
+            else:
+                self.play(*particle_anims, run_time=0.5)
+
+            self.wait(0.1)
+
+        # All checks passed - barrier opens
+        passed_text = Text(
+            "All checks passed!",
+            font_size=26,
+            color=SYNTH_GREEN,
+            weight=BOLD
+        )
+        passed_text.move_to(arrival_text)
+
+        self.play(
+            Transform(arrival_text, passed_text),
+            node.animate.set_stroke(color=SYNTH_GREEN, width=4),
+            run_time=0.8
+        )
+
+        # Packet passes through with cyan flash
+        flash = Circle(radius=2, color=SYNTH_CYAN, stroke_width=5)
+        flash.move_to(node)
+
+        self.play(
+            FadeIn(flash, scale=0.5),
+            flash.animate.scale(2).set_opacity(0),
+            run_time=0.6
+        )
+
+        self.wait(1)
+
+        # Packet exits to next stage
+        self.play(
+            tx_packet.animate.move_to(RIGHT * 7),
+            run_time=1
+        )
+
+        self.wait(1)
+
+
+class Act3_MempoolWaiting(Scene):
+    """
+    ACT 3: THE MEMPOOL (2:15-3:00)
+    Shows the transaction entering the mempool and waiting for mining.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("The Mempool", font_size=38, color=SYNTH_ORANGE)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Create mempool container
+        mempool_container = RoundedRectangle(
+            width=6,
+            height=5,
+            corner_radius=0.3,
+            color=SYNTH_ORANGE,
+            stroke_width=3
+        )
+        mempool_container.set_fill(color=SYNTH_ORANGE, opacity=0.05)
+
+        mempool_label = Text("Mempool", font_size=24, color=SYNTH_ORANGE)
+        mempool_label.next_to(mempool_container, UP, buff=0.2)
+
+        self.play(
+            Create(mempool_container),
+            Write(mempool_label)
+        )
+        self.wait(0.5)
+
+        # Create multiple transactions with different fee rates
+        transactions = [
+            {"fee": 25, "size": "225 vB", "y": 1.8, "color": SYNTH_GREEN, "brightness": 1.0},
+            {"fee": 20, "size": "190 vB", "y": 1.2, "color": SYNTH_GREEN, "brightness": 0.8},
+            {"fee": 15, "size": "280 vB", "y": 0.6, "color": SYNTH_PEACH, "brightness": 0.6},
+            {"fee": 10, "size": "250 vB", "y": 0, "color": SYNTH_PEACH, "brightness": 0.5},  # Alice's tx
+            {"fee": 8, "size": "320 vB", "y": -0.6, "color": SYNTH_CYAN, "brightness": 0.4},
+            {"fee": 5, "size": "210 vB", "y": -1.2, "color": SYNTH_CYAN, "brightness": 0.3},
+            {"fee": 2, "size": "195 vB", "y": -1.8, "color": SYNTH_PURPLE, "brightness": 0.2},
+        ]
+
+        tx_objects = VGroup()
+        for tx in transactions:
+            # Hexagonal transaction
+            hex_tx = RegularPolygon(n=6, radius=0.35, color=tx["color"], stroke_width=2)
+            hex_tx.set_fill(color=tx["color"], opacity=0.1 + tx["brightness"] * 0.15)
+
+            # Fee rate label
+            fee_label = Text(f"{tx['fee']} sat/vB", font_size=12, color=tx["color"])
+            fee_label.move_to(hex_tx)
+
+            tx_group = VGroup(hex_tx, fee_label)
+            tx_group.shift(UP * tx["y"])
+            tx_objects.add(tx_group)
+
+        tx_objects.move_to(mempool_container.get_center())
+
+        # Animate transactions appearing
+        for tx_obj in tx_objects:
+            self.play(
+                FadeIn(tx_obj, scale=0.5),
+                run_time=0.2
+            )
+
+        self.wait(0.5)
+
+        # Highlight Alice's transaction (4th one, 10 sat/vB)
+        alice_tx = tx_objects[3]
+
+        highlight_box = SurroundingRectangle(
+            alice_tx,
+            color=SYNTH_ORANGE,
+            stroke_width=3,
+            buff=0.15
+        )
+
+        alice_label = Text("Alice's TX", font_size=16, color=SYNTH_ORANGE, weight=BOLD)
+        alice_label.next_to(alice_tx, RIGHT, buff=0.5)
+
+        self.play(
+            Create(highlight_box),
+            Write(alice_label)
+        )
+        self.wait(0.3)
+
+        # Show transaction stats
+        stats = VGroup(
+            Text("Fee Rate: 10 sat/vB", font_size=18, color=SYNTH_PEACH),
+            Text("Size: 250 vB", font_size=18, color=SYNTH_PEACH),
+            Text("Total Fee: 0.005 BTC", font_size=18, color=SYNTH_PEACH),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+
+        stats_box = SurroundingRectangle(
+            stats,
+            color=SYNTH_PEACH,
+            stroke_width=2,
+            buff=0.2,
+            corner_radius=0.1
+        )
+        stats_box.set_fill(color=SYNTH_BG, opacity=0.9)
+
+        stats_group = VGroup(stats_box, stats)
+        stats_group.next_to(alice_label, RIGHT, buff=0.5)
+
+        self.play(
+            FadeIn(stats_group, shift=LEFT * 0.3),
+            run_time=0.6
+        )
+        self.wait(1)
+
+        # Explanation text
+        explain = Text(
+            "Waiting for block inclusion...",
+            font_size=22,
+            color=SYNTH_ORANGE
+        )
+        explain.to_edge(DOWN).shift(UP * 0.5)
+        self.play(Write(explain))
+        self.wait(1)
+
+        # Show replication across network (small animation)
+        network_text = Text(
+            "Meanwhile, propagating to thousands of nodes",
+            font_size=20,
+            color=SYNTH_CYAN
+        )
+        network_text.move_to(explain)
+
+        # Small network visualization in corner
+        mini_network = VGroup()
+        for i in range(8):
+            angle = i * TAU / 8
+            dot = Dot(
+                radius=0.08,
+                color=SYNTH_CYAN,
+                point=np.array([np.cos(angle), np.sin(angle), 0]) * 0.8
+            )
+            mini_network.add(dot)
+
+        mini_network.scale(0.6).to_corner(DR).shift(LEFT * 0.5 + UP * 1)
+
+        self.play(
+            Transform(explain, network_text),
+            *[GrowFromCenter(dot) for dot in mini_network],
+            run_time=0.8
+        )
+
+        # Pulse effect on mini network
+        self.play(
+            *[dot.animate.set_color(SYNTH_GREEN).scale(1.3) for dot in mini_network],
+            run_time=0.4
+        )
+        self.play(
+            *[dot.animate.scale(1/1.3) for dot in mini_network],
+            run_time=0.4
+        )
+
+        self.wait(2)
+
+
+class Act4_BlockTemplate(Scene):
+    """
+    ACT 4: MINING - Block Template (3:00-3:30)
+    Shows a miner in Iceland assembling a block template.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Block Template Assembly", font_size=38, color=SYNTH_GREEN)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Miner node (larger, special)
+        miner = RegularPolygon(n=6, radius=2, color=SYNTH_CYAN, stroke_width=4)
+        miner.set_fill(color=SYNTH_CYAN, opacity=0.1)
+        miner.shift(LEFT * 4)
+
+        # Orange corona effect
+        corona = RegularPolygon(n=6, radius=2.3, color=SYNTH_ORANGE, stroke_width=2, stroke_opacity=0.6)
+        corona.move_to(miner)
+
+        miner_label = Text("Miner (Iceland)", font_size=22, color=SYNTH_CYAN)
+        miner_label.next_to(miner, DOWN, buff=0.4)
+
+        self.play(
+            Create(corona),
+            DrawBorderThenFill(miner),
+            Write(miner_label)
+        )
+        self.wait(0.5)
+
+        # Block template container (empty initially)
+        block_template = Rectangle(
+            width=4,
+            height=5,
+            color=SYNTH_GREEN,
+            stroke_width=3
+        )
+        block_template.set_fill(color=SYNTH_GREEN, opacity=0.05)
+        block_template.shift(RIGHT * 3)
+
+        block_label = Text("Block Template", font_size=20, color=SYNTH_GREEN)
+        block_label.next_to(block_template, UP, buff=0.2)
+
+        self.play(
+            Create(block_template),
+            Write(block_label)
+        )
+        self.wait(0.5)
+
+        # Show transactions flying from mempool to block
+        explain = Text(
+            "Selecting highest fee transactions...",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        explain.to_edge(DOWN).shift(UP * 0.5)
+        self.play(Write(explain))
+
+        # Create small transaction hexagons
+        tx_positions = [
+            UP * 1.8,
+            UP * 1.2,
+            UP * 0.6,
+            UP * 0,
+            DOWN * 0.6,
+            DOWN * 1.2,
+        ]
+
+        transactions = VGroup()
+        for pos in tx_positions:
+            tx = RegularPolygon(n=6, radius=0.25, color=SYNTH_PEACH, stroke_width=2)
+            tx.set_fill(color=SYNTH_PEACH, opacity=0.2)
+            tx.move_to(miner.get_center() + LEFT * 3 + pos)
+            transactions.add(tx)
+
+        # Animate transactions appearing and flying into block
+        for i, tx in enumerate(transactions):
+            self.play(FadeIn(tx, scale=0.3), run_time=0.15)
+
+        self.wait(0.3)
+
+        # Move transactions to block template
+        for i, tx in enumerate(transactions):
+            target = block_template.get_center() + tx_positions[i] * 0.6
+            self.play(
+                tx.animate.move_to(target).set_color(SYNTH_GREEN),
+                run_time=0.3
+            )
+
+        self.wait(0.5)
+
+        # Add coinbase transaction (special, gold)
+        coinbase_text = Text(
+            "Coinbase Transaction",
+            font_size=18,
+            color="#FFD700",
+            weight=BOLD
+        )
+        coinbase_text.move_to(explain)
+
+        coinbase = RegularPolygon(n=6, radius=0.35, color="#FFD700", stroke_width=3)
+        coinbase.set_fill(color="#FFD700", opacity=0.3)
+        coinbase.move_to(block_template.get_top() + DOWN * 0.5)
+
+        self.play(
+            Transform(explain, coinbase_text),
+            FadeIn(coinbase, scale=0.3, shift=DOWN * 0.5),
+            run_time=0.8
+        )
+        self.wait(0.5)
+
+        # Show reward text
+        reward = Text(
+            "6.25 BTC + fees",
+            font_size=14,
+            color="#FFD700"
+        )
+        reward.move_to(coinbase)
+
+        self.play(Write(reward))
+        self.wait(1)
+
+        # Block filled indicator
+        filled_text = Text(
+            "Block nearly full: ~3.9M weight units",
+            font_size=20,
+            color=SYNTH_GREEN
+        )
+        filled_text.move_to(explain)
+
+        self.play(Transform(explain, filled_text))
+
+        # Fill indicator
+        self.play(
+            block_template.animate.set_fill(opacity=0.15),
+            run_time=0.8
+        )
+
+        self.wait(2)
+
+
+class Act4_Mining(Scene):
+    """
+    ACT 4: MINING - Mining Process (3:30-4:00)
+    Shows the mining process with hash attempts.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Mining", font_size=38, color=SYNTH_PURPLE)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Block header structure
+        header_data = [
+            ("Previous Block Hash", "000000000000..."),
+            ("Merkle Root", "a1b2c3d4..."),
+            ("Timestamp", "2025-11-11 14:23:07"),
+            ("Nonce", "???"),
+        ]
+
+        header_display = VGroup()
+        for label, value in header_data:
+            label_text = Text(label + ":", font_size=18, color=SYNTH_CYAN)
+            value_text = Text(value, font_size=18, color=SYNTH_GREEN)
+
+            row = VGroup(label_text, value_text).arrange(RIGHT, buff=0.3)
+            header_display.add(row)
+
+        header_display.arrange(DOWN, aligned_edge=LEFT, buff=0.25)
+        header_display.to_edge(LEFT).shift(RIGHT * 0.5)
+
+        for row in header_display:
+            self.play(FadeIn(row, shift=RIGHT * 0.3), run_time=0.3)
+
+        self.wait(0.5)
+
+        # Mining explanation
+        mining_text = Text(
+            "Trying trillions of hash combinations...",
+            font_size=22,
+            color=SYNTH_PURPLE
+        )
+        mining_text.to_edge(DOWN).shift(UP * 0.5)
+        self.play(Write(mining_text))
+
+        # Hash attempt visualization - rapid lightning flashes
+        hash_area = Rectangle(
+            width=5,
+            height=4,
+            color=SYNTH_PURPLE,
+            stroke_width=2
+        )
+        hash_area.shift(RIGHT * 2.5)
+
+        self.play(Create(hash_area))
+
+        # Rapid hash attempts (purple lightning)
+        for _ in range(20):
+            # Random lightning bolts
+            bolts = VGroup()
+            for i in range(3):
+                start = hash_area.get_center() + np.random.uniform(-1, 1, 3) * [1, 1, 0]
+                end = hash_area.get_center() + np.random.uniform(-1, 1, 3) * [1, 1, 0]
+
+                bolt = Line(start, end, color=SYNTH_PURPLE, stroke_width=2)
+                bolts.add(bolt)
+
+            self.play(
+                *[Create(bolt) for bolt in bolts],
+                run_time=0.05
+            )
+            self.play(
+                *[FadeOut(bolt) for bolt in bolts],
+                run_time=0.05
+            )
+
+        # Update nonce display rapidly
+        nonce_row = header_display[3][1]  # The nonce value
+        for nonce in [12847, 847291, 2847183647]:
+            new_nonce = Text(str(nonce), font_size=18, color=SYNTH_GREEN)
+            new_nonce.move_to(nonce_row)
+            self.play(Transform(nonce_row, new_nonce), run_time=0.3)
+
+        self.wait(0.3)
+
+        # SUCCESS! - massive green explosion
+        success_text = Text(
+            "Block Found!",
+            font_size=48,
+            color=SYNTH_GREEN,
+            weight=BOLD
+        )
+        success_text.move_to(ORIGIN)
+
+        # Particle explosion
+        particles = VGroup()
+        for i in range(30):
+            angle = i * TAU / 30
+            particle = Dot(
+                radius=0.1,
+                color=SYNTH_GREEN,
+                point=ORIGIN
+            )
+            particles.add(particle)
+
+        explosion_anims = []
+        for particle in particles:
+            angle = np.random.uniform(0, TAU)
+            distance = np.random.uniform(2, 4)
+            target = np.array([np.cos(angle) * distance, np.sin(angle) * distance, 0])
+            explosion_anims.append(
+                particle.animate.move_to(target).set_opacity(0)
+            )
+
+        self.play(
+            FadeIn(success_text, scale=0.5),
+            *[FadeIn(p, scale=0.5) for p in particles],
+            run_time=0.3
+        )
+        self.play(
+            *explosion_anims,
+            run_time=1.5
+        )
+
+        # Block number
+        block_num = Text(
+            "Block 870,000",
+            font_size=32,
+            color=SYNTH_GREEN
+        )
+        block_num.next_to(success_text, DOWN, buff=0.4)
+
+        self.play(Write(block_num))
+
+        self.wait(2)
+
+
+class Act5_BlockPropagation(Scene):
+    """
+    ACT 5: CONFIRMATION - Block Relay (4:00-4:30)
+    Shows the block propagating through the network.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Block Propagation", font_size=38, color=SYNTH_GREEN)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Block as a large cube
+        block_cube = Cube(
+            side_length=1.5,
+            fill_color=SYNTH_GREEN,
+            fill_opacity=0.2,
+            stroke_color=SYNTH_GREEN,
+            stroke_width=3
+        )
+        block_cube.rotate(PI/6, axis=UP).rotate(PI/6, axis=RIGHT)
+        block_cube.shift(LEFT * 4)
+
+        block_label = Text("Block 870,000", font_size=20, color=SYNTH_GREEN, weight=BOLD)
+        block_label.next_to(block_cube, DOWN, buff=0.5)
+
+        self.play(
+            FadeIn(block_cube, scale=0.3),
+            Write(block_label)
+        )
+
+        # Rotate block slightly for effect
+        self.play(
+            Rotate(block_cube, angle=PI/4, axis=UP),
+            run_time=1
+        )
+
+        self.wait(0.5)
+
+        # Network nodes
+        network_nodes = VGroup()
+        for i in range(12):
+            angle = i * TAU / 12
+            node = Dot(
+                radius=0.15,
+                color=SYNTH_CYAN,
+                point=np.array([np.cos(angle) * 3, np.sin(angle) * 2, 0]) + RIGHT * 2
+            )
+            network_nodes.add(node)
+
+        self.play(
+            *[GrowFromCenter(node) for node in network_nodes],
+            run_time=0.8
+        )
+
+        # Block propagates (compact block announcements)
+        explain = Text(
+            "Optimized block relay (compact blocks)",
+            font_size=20,
+            color=SYNTH_ORANGE
+        )
+        explain.to_edge(DOWN).shift(UP * 0.5)
+        self.play(Write(explain))
+
+        # Send block to all nodes (waves)
+        for wave in range(3):
+            wave_nodes = network_nodes[wave*4:(wave+1)*4]
+
+            # Compact messages
+            messages = VGroup()
+            for node in wave_nodes:
+                msg = RegularPolygon(n=6, radius=0.12, color=SYNTH_ORANGE, stroke_width=2)
+                msg.move_to(block_cube.get_center())
+                messages.add(msg)
+
+            # Animate messages traveling
+            self.play(
+                *[FadeIn(msg, scale=0.5) for msg in messages],
+                run_time=0.2
+            )
+
+            travel_anims = []
+            for msg, node in zip(messages, wave_nodes):
+                travel_anims.append(msg.animate.move_to(node.get_center()))
+
+            self.play(*travel_anims, run_time=0.5)
+
+            # Nodes turn green (validated)
+            self.play(
+                *[node.animate.set_color(SYNTH_GREEN).scale(1.2) for node in wave_nodes],
+                *[FadeOut(msg) for msg in messages],
+                run_time=0.3
+            )
+
+            self.wait(0.2)
+
+        # Node Charlie validates
+        charlie_text = Text(
+            "Node Charlie validates block",
+            font_size=20,
+            color=SYNTH_GREEN
+        )
+        charlie_text.move_to(explain)
+
+        self.play(Transform(explain, charlie_text))
+
+        # Validation checklist (quick version)
+        checks = [
+            "✓ Valid proof-of-work",
+            "✓ Valid previous hash",
+            "✓ All transactions valid",
+            "✓ Block size limits met",
+            "✓ Coinbase correct",
+        ]
+
+        checklist = VGroup()
+        for check in checks:
+            item = Text(check, font_size=14, color=SYNTH_GREEN)
+            checklist.add(item)
+
+        checklist.arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+        checklist.to_edge(RIGHT).shift(LEFT * 0.5)
+
+        for item in checklist:
+            self.play(FadeIn(item, shift=LEFT * 0.2), run_time=0.15)
+
+        self.wait(1.5)
+
+
+class Act5_ChainExtension(Scene):
+    """
+    ACT 5: CONFIRMATION - Chain Extension (4:30-5:00)
+    Shows the block being added to the chain and confirmations accumulating.
+    """
+
+    def construct(self):
+        self.camera.background_color = SYNTH_BG
+
+        # Scene title
+        title = Text("Chain Extension", font_size=38, color=SYNTH_GREEN)
+        title.to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Create blockchain perspective view
+        # Show blocks extending into the distance
+        blocks = VGroup()
+        for i in range(7):
+            z_scale = 0.8 ** i  # Perspective scaling
+            opacity = 1 - i * 0.12
+
+            block = Cube(
+                side_length=1 * z_scale,
+                fill_color=SYNTH_CYAN if i < 6 else SYNTH_GREEN,
+                fill_opacity=0.15 * opacity,
+                stroke_color=SYNTH_CYAN if i < 6 else SYNTH_GREEN,
+                stroke_width=2
+            )
+
+            # Position with perspective
+            x_pos = -3 + i * 1.2 * z_scale
+            y_pos = -0.5 - i * 0.15
+            block.move_to(np.array([x_pos, y_pos, 0]))
+
+            # Rotate for 3D effect
+            block.rotate(PI/6, axis=UP).rotate(PI/8, axis=RIGHT)
+
+            # Block number
+            block_num = Text(
+                f"{869994 + i}",
+                font_size=int(12 * z_scale),
+                color=SYNTH_CYAN if i < 6 else SYNTH_GREEN
+            )
+            block_num.next_to(block, DOWN, buff=0.1 * z_scale)
+
+            blocks.add(VGroup(block, block_num))
+
+        # Draw existing chain
+        for i, block_group in enumerate(blocks[:-1]):
+            self.play(
+                FadeIn(block_group, shift=RIGHT * 0.3),
+                run_time=0.2
+            )
+
+        self.wait(0.5)
+
+        # New block (870000) appears
+        new_block = blocks[-1]
+
+        explain = Text(
+            "Block 870,000 extends the chain",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        explain.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Write(explain),
+            FadeIn(new_block, scale=0.5, shift=LEFT * 0.5),
+            run_time=1
+        )
+
+        # Highlight Alice's transaction
+        tx_indicator = Text(
+            "← Alice's TX",
+            font_size=16,
+            color=SYNTH_ORANGE
+        )
+        tx_indicator.next_to(new_block, RIGHT, buff=0.3)
+
+        self.play(
+            Write(tx_indicator),
+            new_block[0].animate.set_fill(opacity=0.3),
+            run_time=0.6
+        )
+
+        self.wait(1)
+
+        # Show confirmations accumulating
+        conf_text = Text(
+            "1 confirmation",
+            font_size=24,
+            color=SYNTH_GREEN,
+            weight=BOLD
+        )
+        conf_text.move_to(explain)
+
+        self.play(Transform(explain, conf_text))
+        self.wait(0.5)
+
+        # Add more blocks on top
+        additional_blocks = []
+        for i in range(5):
+            block_num = 870001 + i
+            z_scale = 0.8 ** 7
+
+            block = Cube(
+                side_length=1 * z_scale,
+                fill_color=SYNTH_CYAN,
+                fill_opacity=0.08,
+                stroke_color=SYNTH_CYAN,
+                stroke_width=2
+            )
+
+            x_pos = -3 + 7 * 1.2 * z_scale + (i + 1) * 1.2 * z_scale
+            y_pos = -0.5 - 7 * 0.15 - (i + 1) * 0.15
+            block.move_to(np.array([x_pos, y_pos, 0]))
+            block.rotate(PI/6, axis=UP).rotate(PI/8, axis=RIGHT)
+
+            num = Text(
+                str(block_num),
+                font_size=int(10 * z_scale),
+                color=SYNTH_CYAN
+            )
+            num.next_to(block, DOWN, buff=0.1 * z_scale)
+
+            additional_blocks.append(VGroup(block, num))
+
+        # Animate new blocks appearing
+        for i, block_group in enumerate(additional_blocks):
+            self.play(
+                FadeIn(block_group, shift=LEFT * 0.3),
+                run_time=0.3
+            )
+
+            # Update confirmation count
+            new_conf = Text(
+                f"{i + 2} confirmations",
+                font_size=24,
+                color=SYNTH_GREEN,
+                weight=BOLD
+            )
+            new_conf.move_to(explain)
+
+            self.play(
+                Transform(explain, new_conf),
+                new_block[0].animate.set_fill(opacity=0.25 + i * 0.03),
+                run_time=0.2
+            )
+
+            self.wait(0.2)
+
+        # 6 confirmations reached
+        final_text = Text(
+            "6 confirmations - Transaction final!",
+            font_size=26,
+            color=SYNTH_GREEN,
+            weight=BOLD
+        )
+        final_text.move_to(explain)
+
+        self.play(
+            Transform(explain, final_text),
+            new_block[0].animate.set_stroke(width=4),
+            run_time=0.8
+        )
+
+        self.wait(1)
+
+        # Zoom out - show full journey
+        journey_text = Text(
+            "Journey complete: Wallet → Network → Mempool → Mining → Blockchain",
+            font_size=18,
+            color=SYNTH_CYAN
+        )
+        journey_text.to_edge(UP).shift(DOWN * 0.8)
+
+        self.play(
+            FadeOut(title),
+            Write(journey_text)
+        )
+
+        self.wait(2)
+
+        # Final fade
+        self.play(
+            *[FadeOut(mob) for mob in self.mobjects]
+        )
