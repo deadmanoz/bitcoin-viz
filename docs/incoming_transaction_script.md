@@ -292,8 +292,8 @@ for (const CTxIn& txin : tx.vin) {
 **Visual:**
 - UTXO database visualization (chainstate)
 - Each input lights up as its UTXO is found
-- Input 1: a7b8c9:0 → ✓ Found (0.5 BTC)
-- Input 2: d1e2f3:1 → ✓ Found (0.3 BTC)
+- **Example:** Input 1: a7b8c9:0 → ✓ Found (0.5 BTC)
+- **Example:** Input 2: d1e2f3:1 → ✓ Found (0.3 BTC)
 
 **Narration:**
 > "Every input must reference a real, unspent output. The coin view checks the UTXO set - if any input is missing or already spent, validation fails immediately."
@@ -305,13 +305,13 @@ for (const CTxIn& txin : tx.vin) {
 Consensus::CheckTxInputs(tx, state, m_view)  ✓
 ```
 **Visual:**
-- Math overlay:
+- Math overlay showing example transaction:
   ```
   Inputs:  0.5 + 0.3 = 0.8 BTC
   Outputs: 0.4 + 0.3 = 0.7 BTC
   Fee:     0.8 - 0.7 = 0.1 BTC ✓
   ```
-- ✓ Inputs ≥ Outputs
+- ✓ Inputs ≥ Outputs (no value inflation)
 
 #### Check 11-13: Script & Witness Checks
 ```cpp
@@ -327,27 +327,38 @@ IsWitnessStandard(tx)  ✓
 #### Check 14: Sigop Cost
 ```cpp
 // src/validation.cpp:942
-// src/policy/policy.h:40
-GetTransactionSigOpCost(tx) ≤ MAX_STANDARD_TX_SIGOPS_COST  ✓
-// MAX_STANDARD_TX_SIGOPS_COST = 16000
+// src/policy/policy.h:40 - MAX_STANDARD_TX_SIGOPS_COST = 16000
+// src/consensus/consensus.h:17 - MAX_BLOCK_SIGOPS_COST = 80000
+
+if (GetTransactionSigOpCost(tx, m_view) > MAX_STANDARD_TX_SIGOPS_COST) {
+    return state.Invalid(TxValidationResult::TX_NOT_STANDARD, "bad-txns-too-many-sigops");
+}
 ```
 **Visual:**
-- Counter: "Sigops: 142 / 16000"
+- Counter showing example: "Sigops: 142 / 16000 (policy limit)"
 - ✓ Under limit
 
 #### Check 15-16: Fee Checks
 ```cpp
 // src/validation.cpp:952-961
-// src/policy/policy.h:66 - DEFAULT_MIN_RELAY_TX_FEE = 100 sat/kvB (0.1 sat/vB)
-Fee rate ≥ minRelayTxFee (0.1 sat/vB)  ✓ (100 sat/vB)
-Fee rate ≥ mempool minimum              ✓ (5 sat/vB current - dynamic)
+// src/policy/policy.h:66 - DEFAULT_MIN_RELAY_TX_FEE = 100 sat/kvB
+
+// Check 1: Fee rate must meet minimum relay fee
+if (nFeeRate < minRelayTxFee) {
+    return state.Invalid(TxValidationResult::TX_RECONSIDERABLE, "min relay fee not met");
+}
+
+// Check 2: Fee rate must meet dynamic mempool minimum
+if (nFeeRate < m_pool.GetMinFee()) {
+    return state.Invalid(TxValidationResult::TX_MEMPOOL_POLICY, "mempool min fee not met");
+}
 ```
 **Visual:**
-- Fee rate bar chart
-- Minimum relay fee line (0.1 sat/vB - policy floor)
-- Mempool minimum line (5 sat/vB - dynamic, rises when full)
-- Our tx fee (100 sat/vB)
-- ✓ Exceeds both minimums
+- Fee rate bar chart showing three values:
+  - **Policy floor**: 0.1 sat/vB (DEFAULT_MIN_RELAY_TX_FEE)
+  - **Mempool minimum** (dynamic): 5 sat/vB (example - rises when mempool is full)
+  - **Our example tx**: 100 sat/vB
+- ✓ Our transaction exceeds both thresholds
 
 **Narration:**
 > "Sixteen rapid checks ensure the transaction is well-formed, economically rational, and meets network standards. Only after passing all these do we proceed to the expensive cryptographic validation."
@@ -377,7 +388,7 @@ if (!m_conflicts.empty()) {
 }
 ```
 
-**Visual: Original tx vs Replacement tx comparison**
+**Visual: Example comparison (Original tx vs Replacement tx)**
 ```
 Original Transaction          Replacement Transaction
 ─────────────────────        ───────────────────────
@@ -385,13 +396,15 @@ Fee:     0.05 BTC             Fee:     0.08 BTC  ✓
 Feerate: 50 sat/vB            Feerate: 80 sat/vB ✓
 Size:    200 vB               Size:    250 vB
 ```
+Note: These are example values for illustration
 
 **Checks animated:**
-1. ✓ BIP 125 signaling (sequence < 0xfffffffe)
-2. ✓ Higher absolute fee (0.08 > 0.05)
-3. ✓ Higher fee rate (80 > 50)
+1. ✓ BIP 125 signaling (sequence ≤ MAX_BIP125_RBF_SEQUENCE = 0xfffffffd)
+   - Reference: src/util/rbf.h:12
+2. ✓ Higher absolute fee (0.08 BTC > 0.05 BTC in our example)
+3. ✓ Higher fee rate (80 sat/vB > 50 sat/vB in our example)
 4. ✓ No new unconfirmed inputs
-5. ✓ Pays for bandwidth (extra fee ≥ relay fee × size)
+5. ✓ Pays for bandwidth (extra fee ≥ incremental relay fee × size)
 
 **Narration:**
 > "If the transaction conflicts with existing mempool entries, Replace-By-Fee rules ensure the replacement is strictly better for miners and doesn't enable denial-of-service attacks."
@@ -532,11 +545,11 @@ if (!bypass_limits) {
 ```
 
 **Visual:**
-- Mempool capacity meter: "Memory: 298 MB / 300 MB"
+- Mempool capacity meter: "Memory: 298 MB / 300 MB" (example showing nearly full)
 - If full: Eviction animation
   - Lowest feerate transactions highlighted (red glow)
   - Ejected from mempool (fall out of visualization)
-- Our transaction: Safe (high feerate)
+- Our example transaction: Safe (high feerate keeps it in mempool)
 
 **Step 3: Signal Emission**
 ```cpp
@@ -558,8 +571,8 @@ GetMainSignals().TransactionAddedToMempool(
 **Visual:**
 - Transaction settles into mempool
 - Mempool shown as grid sorted by fee rate
-- Our transaction positioned by fee rate (descending order)
-- Transaction data shown:
+- Our example transaction positioned by fee rate (descending order)
+- Example mempool entry data:
   ```
   ┌─ Mempool Entry ────────┐
   │ txid:   a1b2c3...       │
@@ -767,8 +780,8 @@ Explore More:
 - Speed varies by validation stage (fast checks = fast particles)
 
 ### Performance Metrics Overlay
-- Optional timing overlay: "PreChecks: 0.8ms, ScriptChecks: 12.3ms"
-- Validation cache hit rate: "Cache hits: 87%"
+- Optional timing overlay (example values): "PreChecks: 0.8ms, ScriptChecks: 12.3ms"
+- Validation cache hit rate (example): "Cache hits: 87%"
 
 ---
 
