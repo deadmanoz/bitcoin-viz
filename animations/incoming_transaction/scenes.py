@@ -12,7 +12,10 @@ Runtime: ~2-3 minutes (condensed version of 14-minute script)
 from manim import *
 import numpy as np
 import sys
-sys.path.append("..")
+import os
+
+# Add parent directory to path to import common module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common import *
 
 
