@@ -8,38 +8,6 @@
 
 ---
 
-## Directory Restructure Proposal
-
-Before we dive into the script, here's a proposed reorganization of the animations directory:
-
-```
-animations/
-├── common.py                        # Shared utilities (unchanged)
-│
-├── lifecycle/                       # HIGH-LEVEL: User-facing transaction journey
-│   ├── __init__.py
-│   ├── intro.py                    # Overview of the transaction lifecycle
-│   ├── act1_creation.py            # Wallet & transaction construction
-│   ├── act2_propagation.py         # Network broadcast (high-level)
-│   ├── act3_mempool.py             # Mempool waiting area
-│   ├── act4_mining.py              # Block template & mining
-│   └── act5_confirmation.py        # Block propagation & chain extension
-│
-└── internals/                       # DEEP-DIVE: Code-level technical details
-    ├── __init__.py
-    ├── incoming_transaction.py      # P2P → Mempool processing (THIS SCRIPT)
-    ├── orphan_handling.py           # Future: TxOrphanage deep-dive
-    ├── rbf_replacement.py           # Future: Replace-By-Fee mechanics
-    ├── script_validation.py         # Future: Script engine internals
-    └── package_relay.py             # Future: CPFP and package validation
-```
-
-**Rationale:**
-- `lifecycle/` = High-level user journey (what happens to MY transaction)
-- `internals/` = Low-level implementation (what happens INSIDE Bitcoin Core)
-
----
-
 ## Visual Theme for This Video
 
 **Code-Focused Aesthetic:**
