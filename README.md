@@ -11,12 +11,38 @@ Using a synthwave/cyberpunk visual style with neon colors on dark backgrounds, w
 ```
 bitcoin-viz/
 ├── animations/          # Manim scene files
+│   ├── common.py                   # Shared color palette and utilities
+│   ├── transaction_lifecycle.py    # Intro scene + legacy Act scenes
+│   ├── act1_creation.py           # Wallet & transaction construction
+│   ├── act2_propagation.py        # Network broadcast & validation
+│   ├── act3_mempool.py            # Mempool waiting area
+│   ├── act4_mining.py             # Block template & mining
+│   └── act5_confirmation.py       # Block propagation & chain extension
 ├── assets/             # Visual assets (SVGs, images)
 ├── bitcoin_hooks/      # Python utilities for Bitcoin Core integration
 ├── scripts/            # Helper scripts
 ├── docs/               # Storyboards and documentation
 └── media/              # Rendered videos (git-ignored)
+    └── videos/
+        ├── act1_creation/          # Act 1 scene outputs
+        ├── act2_propagation/       # Act 2 scene outputs
+        ├── act3_mempool/           # Act 3 scene outputs
+        ├── act4_mining/            # Act 4 scene outputs
+        ├── act5_confirmation/      # Act 5 scene outputs
+        └── full_lifecycle/         # Complete joined video
 ```
+
+## Animation Organization
+
+Each "Act" is separated into its own file for easier iteration:
+
+- **Act 1: Creation** (`act1_creation.py`) - Wallet UTXO selection and transaction construction
+- **Act 2: Propagation** (`act2_propagation.py`) - P2P network broadcast and node validation
+- **Act 3: Mempool** (`act3_mempool.py`) - Fee-sorted waiting area
+- **Act 4: Mining** (`act4_mining.py`) - Block template assembly and mining process
+- **Act 5: Confirmation** (`act5_confirmation.py`) - Block propagation and chain extension
+
+All acts share a common synthwave/cyberpunk color palette defined in `common.py`.
 
 ## Quick Start
 
@@ -40,23 +66,34 @@ just --list
 just setup              # Create venv and install dependencies
 just install            # Update dependencies (venv must exist)
 
-# Rendering animations
+# Rendering individual scenes
 just preview SceneName [file]     # Quick preview (480p)
 just render SceneName [file]      # Medium quality (720p)
 just render-hq SceneName [file]   # High quality (1080p)
 just render-4k SceneName [file]   # 4K quality (2160p)
 
+# Rendering complete transaction lifecycle
+just render-lifecycle [quality]   # Render all lifecycle scenes (default: ql)
+just join-lifecycle [quality]     # Join scenes into single video (default: 480p15)
+
 # Utilities
-just preview-all        # Render all POC scenes
+just preview-all        # Render all POC scenes at preview quality
 just list-scenes [file] # List available scenes in a file
 just stats              # Show project statistics
 just clean              # Remove rendered media files
 just clean-all          # Remove media + venv
 
-# Examples
+# Examples - Individual scenes
 just preview TheWallet act1_creation
 just preview TransactionConstruction act1_creation
+just preview MempoolWaiting act3_mempool
 just list-scenes act1_creation
+
+# Examples - Complete lifecycle video
+just render-lifecycle ql          # Render all scenes at low quality
+just join-lifecycle 480p15        # Join into single video
+just render-lifecycle qm          # Render all at medium quality (720p)
+just join-lifecycle 720p30        # Join medium quality videos
 ```
 
 ## Manual Usage (if you prefer not to use just)

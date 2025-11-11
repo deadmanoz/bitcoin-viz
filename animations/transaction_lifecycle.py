@@ -345,7 +345,7 @@ class Act1_TransactionConstruction(Scene):
             angle = i * PI / 3
             hex = RegularPolygon(n=6, radius=0.5, color=SYNTH_CYAN, stroke_width=2)
             hex.set_fill(color=SYNTH_CYAN, opacity=0.1)
-            hex.move_to(center.get_center() + np.array([np.cos(angle), np.sin(angle), 0]) * 1.2)
+            hex.move_to(center.get_center() + np.array([np.cos(angle), np.sin(angle), 0.0]) * 1.2)
             surrounding.add(hex)
 
         # Connection lines
@@ -410,19 +410,17 @@ class Act1_TransactionConstruction(Scene):
         """Create lightning effect for signature visualization"""
         lightning = VGroup()
 
-        # Create jagged lightning paths
+        # Create jagged lightning paths (simple lines for reliability)
         for i in range(3):
             angle = i * TAU / 3
-            points = [ORIGIN]
-            current = np.array([0, 0, 0])
 
-            for _ in range(5):
-                current += np.array([
-                    np.cos(angle) * 0.3 + np.random.uniform(-0.1, 0.1),
-                    np.sin(angle) * 0.3 + np.random.uniform(-0.1, 0.1),
-                    0
-                ])
-                points.append(current.copy())
+            # Create a jagged line from center outward
+            points = [
+                ORIGIN,
+                np.array([np.cos(angle) * 0.4, np.sin(angle) * 0.4, 0.0]),
+                np.array([np.cos(angle) * 0.7 + 0.1, np.sin(angle) * 0.7 - 0.1, 0.0]),
+                np.array([np.cos(angle) * 1.0, np.sin(angle) * 1.0, 0.0]),
+            ]
 
             bolt = VMobject(color=SYNTH_PURPLE, stroke_width=3)
             bolt.set_points_as_corners(points)
@@ -536,17 +534,21 @@ class Act2_InitialBroadcast(Scene):
         nodes = VGroup()
         connections = VGroup()
 
-        # Create nodes in a semi-random but structured layout
+        # Create nodes in a deterministic but varied layout
+        # Pre-computed offsets for natural-looking positioning
+        x_offsets = [0.2, -0.15, 0.1, -0.25, 0.18, -0.1, 0.22, 0.05, -0.2, 0.15, -0.18, 0.08, -0.12, 0.25, -0.05]
+        y_offsets = [0.15, -0.1, 0.18, 0.05, -0.15, 0.12, -0.08, 0.2, 0.1, -0.18, 0.08, -0.12, 0.15, -0.05, 0.1]
+
         node_positions = []
         for i in range(15):
             # Arrange in rough layers
             layer = i // 5
             pos_in_layer = i % 5
 
-            x = (pos_in_layer - 2) * 2 + np.random.uniform(-0.3, 0.3)
-            y = 1 - layer * 1.5 + np.random.uniform(-0.2, 0.2)
+            x = (pos_in_layer - 2) * 2 + x_offsets[i]
+            y = 1 - layer * 1.5 + y_offsets[i]
 
-            node_positions.append(np.array([x, y, 0]))
+            node_positions.append(np.array([x, y, 0.0]))
 
         # Create nodes
         for pos in node_positions:
@@ -554,12 +556,13 @@ class Act2_InitialBroadcast(Scene):
             node.set_sheen(-0.3, UP)  # Add 3D-like sheen
             nodes.add(node)
 
-        # Create connections (not all nodes connected to all)
+        # Create connections (deterministic pattern based on distance)
+        connect_pattern = [True, False, True, True, False, True, False, True]  # Varied connection pattern
         for i, pos1 in enumerate(node_positions):
             for j, pos2 in enumerate(node_positions[i+1:], start=i+1):
                 distance = np.linalg.norm(pos1 - pos2)
-                # Only connect nearby nodes
-                if distance < 2.5 and np.random.random() > 0.3:
+                # Only connect nearby nodes with deterministic pattern
+                if distance < 2.5 and connect_pattern[(i + j) % len(connect_pattern)]:
                     line = Line(pos1, pos2, color=SYNTH_PURPLE, stroke_width=1.5, stroke_opacity=0.4)
                     connections.add(line)
 
@@ -783,7 +786,7 @@ class Act2_NodeValidation(Scene):
             particle_anims = []
             for j, particle in enumerate(particles):
                 angle = j * TAU / 6
-                target = box.get_center() + np.array([np.cos(angle), np.sin(angle), 0]) * 0.5
+                target = box.get_center() + np.array([np.cos(angle), np.sin(angle), 0.0]) * 0.5
                 particle_anims.append(
                     particle.animate.move_to(target).set_opacity(0)
                 )
@@ -970,7 +973,7 @@ class Act3_MempoolWaiting(Scene):
             dot = Dot(
                 radius=0.08,
                 color=SYNTH_CYAN,
-                point=np.array([np.cos(angle), np.sin(angle), 0]) * 0.8
+                point=np.array([np.cos(angle), np.sin(angle), 0.0]) * 0.8
             )
             mini_network.add(dot)
 
@@ -1200,12 +1203,23 @@ class Act4_Mining(Scene):
         self.play(Create(hash_area))
 
         # Rapid hash attempts (purple lightning)
-        for _ in range(20):
-            # Random lightning bolts
+        # Pre-computed deterministic positions for reliable rendering
+        bolt_configs = [
+            [(0.5, 0.3), (-0.4, -0.5)],
+            [(-0.3, 0.6), (0.6, -0.2)],
+            [(0.2, -0.4), (-0.5, 0.4)],
+        ]
+
+        for cycle in range(20):
+            # Deterministic lightning bolts
             bolts = VGroup()
+            config_idx = cycle % len(bolt_configs)
             for i in range(3):
-                start = hash_area.get_center() + np.random.uniform(-1, 1, 3) * [1, 1, 0]
-                end = hash_area.get_center() + np.random.uniform(-1, 1, 3) * [1, 1, 0]
+                offset = (cycle + i) % len(bolt_configs)
+                start_offset, end_offset = bolt_configs[(config_idx + i) % len(bolt_configs)]
+
+                start = hash_area.get_center() + np.array([start_offset[0], start_offset[1], 0.0])
+                end = hash_area.get_center() + np.array([end_offset[0], end_offset[1], 0.0])
 
                 bolt = Line(start, end, color=SYNTH_PURPLE, stroke_width=2)
                 bolts.add(bolt)
@@ -1237,10 +1251,9 @@ class Act4_Mining(Scene):
         )
         success_text.move_to(ORIGIN)
 
-        # Particle explosion
+        # Particle explosion (deterministic pattern)
         particles = VGroup()
         for i in range(30):
-            angle = i * TAU / 30
             particle = Dot(
                 radius=0.1,
                 color=SYNTH_GREEN,
@@ -1249,10 +1262,11 @@ class Act4_Mining(Scene):
             particles.add(particle)
 
         explosion_anims = []
-        for particle in particles:
-            angle = np.random.uniform(0, TAU)
-            distance = np.random.uniform(2, 4)
-            target = np.array([np.cos(angle) * distance, np.sin(angle) * distance, 0])
+        for i, particle in enumerate(particles):
+            angle = i * TAU / 30
+            # Vary distance based on position for visual interest
+            distance = 2.5 + (i % 3) * 0.5
+            target = np.array([np.cos(angle) * distance, np.sin(angle) * distance, 0.0])
             explosion_anims.append(
                 particle.animate.move_to(target).set_opacity(0)
             )
@@ -1329,7 +1343,7 @@ class Act5_BlockPropagation(Scene):
             node = Dot(
                 radius=0.15,
                 color=SYNTH_CYAN,
-                point=np.array([np.cos(angle) * 3, np.sin(angle) * 2, 0]) + RIGHT * 2
+                point=np.array([np.cos(angle) * 3, np.sin(angle) * 2, 0.0]) + RIGHT * 2
             )
             network_nodes.add(node)
 
