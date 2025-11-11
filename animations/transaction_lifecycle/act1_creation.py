@@ -44,7 +44,7 @@ class TheWallet(Scene):
         utxos_data = [
             {"amount": "0.5 BTC", "txid": "abc123...def456", "output": "#0", "pos": LEFT * 3 + UP * 1},
             {"amount": "0.35 BTC", "txid": "789ghi...jkl012", "output": "#1", "pos": ORIGIN + UP * 1},
-            {"amount": "0.2 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
+            {"amount": "0.1 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
         ]
 
         utxos = VGroup()
@@ -118,7 +118,7 @@ class TheWallet(Scene):
 
         # Add change distribution note
         change_text = Text(
-            "Bob will receive 0.7 BTC and Alice will receive 0.15 BTC as change",
+            "Bob will receive 0.7 BTC and Alice will receive 0.14 BTC as change (0.01 BTC fee)",
             font_size=22,
             color=SYNTH_GREEN
         )
@@ -170,7 +170,7 @@ class TheWallet(Scene):
         central_pool.set_fill(color=SYNTH_CYAN, opacity=0.2)
 
         pool_label = Text("0.85 BTC", font_size=20, color=SYNTH_CYAN, weight=BOLD)
-        pool_label.move_to(central_pool)
+        pool_label.next_to(central_pool, UP, buff=0.3)
 
         pool_group = VGroup(central_pool, pool_label)
 
@@ -210,15 +210,22 @@ class TheWallet(Scene):
 
         # Create output boxes on the right
         output1_box = self.create_output_box("0.7 BTC", "(to Bob)", SYNTH_ORANGE)
-        output1_box.move_to(RIGHT * 4 + UP * 0.8)
+        output1_box.move_to(RIGHT * 4 + UP * 1.2)
 
-        output2_box = self.create_output_box("0.15 BTC", "(change)", SYNTH_ORANGE)
-        output2_box.move_to(RIGHT * 4 + DOWN * 0.8)
+        output2_box = self.create_output_box("0.14 BTC", "(change)", SYNTH_ORANGE)
+        output2_box.move_to(RIGHT * 4 + DOWN * 0.2)
 
-        # Split particles and flow to outputs
-        # About 20 particles go to output1, 5 to output2 (proportional to value)
-        particles_to_output1 = particles1[:10] + particles2[:10]
-        particles_to_output2 = particles1[10:] + particles2[10:]
+        # Fee output box - more ephemeral looking with SYNTH_GOLD and lower opacity
+        fee_box = self.create_output_box("0.01 BTC", "(fee to miners)", SYNTH_GOLD)
+        fee_box.move_to(RIGHT * 4 + DOWN * 1.6)
+        fee_box[0].set_stroke(opacity=0.6)  # More ephemeral border
+        fee_box[1].set_opacity(0.7)  # More ephemeral text
+
+        # Split particles and flow to outputs (proportional to value)
+        # Total 30 particles: ~21 to Bob, ~4 to change, ~5 to fees
+        particles_to_output1 = particles1[:11] + particles2[:10]  # 21 particles for 0.7 BTC
+        particles_to_output2 = particles1[11:13] + particles2[10:12]  # 4 particles for 0.14 BTC
+        particles_to_fee = particles1[13:] + particles2[12:]  # 5 particles for 0.01 BTC
 
         self.play(
             *[particle.animate.move_to(output1_box.get_center() +
@@ -227,6 +234,9 @@ class TheWallet(Scene):
             *[particle.animate.move_to(output2_box.get_center() +
                 np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
                 for particle in particles_to_output2],
+            *[particle.animate.move_to(fee_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_fee],
             FadeOut(pool_label),
             central_pool.animate.set_fill(opacity=0.05),
             run_time=1.5
@@ -236,18 +246,35 @@ class TheWallet(Scene):
         self.play(
             FadeIn(output1_box, scale=0.5),
             FadeIn(output2_box, scale=0.5),
+            FadeIn(fee_box, scale=0.5),
             *[FadeOut(particle) for particle in particles1 + particles2],
             run_time=1
         )
 
         self.wait(0.5)
 
+        # Recreate input boxes to show final transaction structure
+        input1_box = self.create_output_box("0.5 BTC", "", SYNTH_GREEN)
+        input1_box.move_to(LEFT * 4 + UP * 1.2)
+
+        input2_box = self.create_output_box("0.35 BTC", "", SYNTH_GREEN)
+        input2_box.move_to(LEFT * 4 + DOWN * 0.2)
+
+        self.play(
+            FadeIn(input1_box, scale=0.5),
+            FadeIn(input2_box, scale=0.5),
+            FadeOut(central_pool),
+            run_time=0.8
+        )
+
+        self.wait(0.3)
+
         # Add "Inputs" and "Outputs" labels
         inputs_label = Text("Inputs", font_size=20, color=SYNTH_GREEN, weight=BOLD)
-        inputs_label.move_to(LEFT * 4 + UP * 2)
+        inputs_label.move_to(LEFT * 4 + UP * 2.5)
 
         outputs_label = Text("Outputs", font_size=20, color=SYNTH_ORANGE, weight=BOLD)
-        outputs_label.move_to(RIGHT * 4 + UP * 2)
+        outputs_label.move_to(RIGHT * 4 + UP * 2.5)
 
         self.play(
             Write(inputs_label),
@@ -255,9 +282,11 @@ class TheWallet(Scene):
             run_time=0.8
         )
 
+        self.wait(0.5)
+
         # Final summary
         final_text = Text(
-            "Transaction ready: 0.85 BTC in → 0.85 BTC out",
+            "Transaction: 0.85 BTC in → 0.84 BTC out + 0.01 BTC fee",
             font_size=22,
             color=SYNTH_GREEN
         )
