@@ -31,7 +31,7 @@ install:
     echo "✓ Dependencies installed"
 
 # Render animation at low quality (preview) - usage: just preview SceneName [file]
-preview scene_name file="transaction_lifecycle":
+preview scene_name file="act1_creation":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -92,7 +92,7 @@ preview-all:
     @just preview Act5_ChainExtension transaction_lifecycle
 
 # List all available scenes in a file - usage: just list-scenes [file]
-list-scenes file="transaction_lifecycle":
+list-scenes file="act1_creation":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then

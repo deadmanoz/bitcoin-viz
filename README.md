@@ -54,9 +54,9 @@ just clean              # Remove rendered media files
 just clean-all          # Remove media + venv
 
 # Examples
-just preview TransactionLifecycleIntro transaction_lifecycle
-just preview Act1_TheWallet transaction_lifecycle
-just list-scenes transaction_lifecycle
+just preview TheWallet act1_creation
+just preview TransactionConstruction act1_creation
+just list-scenes act1_creation
 ```
 
 ## Manual Usage (if you prefer not to use just)
@@ -70,7 +70,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Render an animation
-manim -ql animations/transaction_lifecycle.py TransactionLifecycleIntro
+manim -ql animations/act1_creation.py TheWallet
 ```
 
 ## Quality Flags (for manual manim usage)
