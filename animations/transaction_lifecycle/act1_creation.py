@@ -44,7 +44,7 @@ class TheWallet(Scene):
         utxos_data = [
             {"amount": "0.5 BTC", "txid": "abc123...def456", "output": "#0", "pos": LEFT * 3 + UP * 1},
             {"amount": "0.35 BTC", "txid": "789ghi...jkl012", "output": "#1", "pos": ORIGIN + UP * 1},
-            {"amount": "0.15 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
+            {"amount": "0.2 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
         ]
 
         utxos = VGroup()
@@ -131,9 +131,9 @@ class TheWallet(Scene):
 
         self.wait(1.5)
 
-        # Fade unselected UTXO and other elements
+        # Fade out unselected UTXO and other elements
         self.play(
-            utxos[2].animate.set_opacity(0.3),
+            FadeOut(utxos[2]),
             FadeOut(grid),
             FadeOut(wallet_label),
             FadeOut(coin_selection_label),
