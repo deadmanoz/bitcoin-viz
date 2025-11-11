@@ -292,8 +292,8 @@ for (const CTxIn& txin : tx.vin) {
 **Visual:**
 - UTXO database visualization (chainstate)
 - Each input lights up as its UTXO is found
-- **Example:** Input 1: a7b8c9:0 → ✓ Found (0.5 BTC)
-- **Example:** Input 2: d1e2f3:1 → ✓ Found (0.3 BTC)
+- **Example:** Input 1: abc123...def456:0 → ✓ Found (0.5 BTC)
+- **Example:** Input 2: 789ghi...jkl012:1 → ✓ Found (0.35 BTC)
 
 **Narration:**
 > "Every input must reference a real, unspent output. The coin view checks the UTXO set - if any input is missing or already spent, validation fails immediately."
@@ -307,9 +307,9 @@ Consensus::CheckTxInputs(tx, state, m_view)  ✓
 **Visual:**
 - Math overlay showing example transaction:
   ```
-  Inputs:  0.5 + 0.3 = 0.8 BTC
-  Outputs: 0.4 + 0.3 = 0.7 BTC
-  Fee:     0.8 - 0.7 = 0.1 BTC ✓
+  Inputs:  0.5 + 0.35 = 0.85 BTC
+  Outputs: 0.7 + 0.1 = 0.8 BTC (payment + change)
+  Fee:     0.85 - 0.8 = 0.05 BTC ✓
   ```
 - ✓ Inputs ≥ Outputs (no value inflation)
 
@@ -357,8 +357,8 @@ if (nFeeRate < m_pool.GetMinFee()) {
 - Fee rate bar chart showing three values:
   - **Policy floor**: 0.1 sat/vB (DEFAULT_MIN_RELAY_TX_FEE)
   - **Mempool minimum** (dynamic): 5 sat/vB (example - rises when mempool is full)
-  - **Our example tx**: 100 sat/vB
-- ✓ Our transaction exceeds both thresholds
+  - **Our example tx**: 20,000 sat/vB (0.05 BTC fee / 250 vB)
+- ✓ Our transaction easily exceeds both thresholds
 
 **Narration:**
 > "Sixteen rapid checks ensure the transaction is well-formed, economically rational, and meets network standards. Only after passing all these do we proceed to the expensive cryptographic validation."
@@ -575,10 +575,10 @@ GetMainSignals().TransactionAddedToMempool(
 - Example mempool entry data:
   ```
   ┌─ Mempool Entry ────────┐
-  │ txid:   a1b2c3...       │
-  │ Fee:    0.1 BTC         │
+  │ txid:   abc123...       │
+  │ Fee:    0.05 BTC        │
   │ Size:   250 vB          │
-  │ Rate:   100 sat/vB      │
+  │ Rate:   20000 sat/vB    │
   │ Time:   14:23:15 UTC    │
   │ Ancestors: 2            │
   │ Descendants: 0          │
