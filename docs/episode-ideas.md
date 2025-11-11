@@ -15,24 +15,23 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 1: "The Transaction Journey" 🚗
+## Episode 1: "The Transaction Journey"
 **Track:** Beginner
 **Length:** 15-20 minutes
-**Vehicle Analogy:** Following cargo through a logistics network
 
 **Outline:**
 1. Alice wants to send Bitcoin to Bob
-2. Creating a transaction (selecting UTXOs as "fuel")
-3. Broadcasting to the network (vehicle enters highway)
-4. Mempool processing (waiting at distribution center)
-5. Mining and confirmation (loading onto permanent transport)
-6. Final confirmation (delivery complete)
+2. Creating a transaction (selecting UTXOs)
+3. Broadcasting to the network
+4. Mempool processing (validation and queuing)
+5. Mining and confirmation (inclusion in a block)
+6. Final confirmation
 
 **Visual Elements:**
 - Transaction structure visualization (inputs/outputs)
-- UTXO set as fuel tanks
+- UTXO set as colored hexagons
 - Mempool as sorting facility
-- Block as cargo container
+- Block as data container
 
 **Bitcoin Core Touchpoints:**
 - `CreateTransaction()` in wallet
@@ -42,10 +41,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 2: "Script Execution - Bitcoin's Virtual Machine" 🔧
+## Episode 2: "Script Execution - Bitcoin's Virtual Machine"
 **Track:** Intermediate
 **Length:** 18-22 minutes
-**Vehicle Analogy:** Engine combustion cycle
 
 **Outline:**
 1. What is Bitcoin Script?
@@ -68,10 +66,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 3: "The Consensus Engine - Proof of Work" ⚙️
+## Episode 3: "The Consensus Engine - Proof of Work"
 **Track:** Intermediate
 **Length:** 20-25 minutes
-**Vehicle Analogy:** Engine power and efficiency
 
 **Outline:**
 1. What is consensus?
@@ -84,7 +81,7 @@ Episodes focused on specific subsystems or algorithms
 **Visual Elements:**
 - Hash function visualization
 - Mining as solving puzzles
-- Difficulty as resistance/friction
+- Difficulty adjustment mechanism
 - Longest chain rule
 - Orphan blocks
 
@@ -96,10 +93,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 4: "The UTXO Set - Bitcoin's Fuel System" ⛽
+## Episode 4: "The UTXO Set - Bitcoin's State Management"
 **Track:** Intermediate
 **Length:** 15-18 minutes
-**Vehicle Analogy:** Fuel tank and consumption
 
 **Outline:**
 1. Why UTXOs, not account balances?
@@ -109,7 +105,7 @@ Episodes focused on specific subsystems or algorithms
 5. State management
 
 **Visual Elements:**
-- UTXO as discrete fuel cells
+- UTXOs as discrete units
 - Transaction consuming/creating UTXOs
 - UTXO set as database
 - Coin selection as optimization problem
@@ -121,10 +117,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 5: "The P2P Network - Bitcoin's Transmission" 📡
+## Episode 5: "The P2P Network - Message Propagation"
 **Track:** Beginner
 **Length:** 18-20 minutes
-**Vehicle Analogy:** Transmission and drivetrain
 
 **Outline:**
 1. Peer-to-peer architecture
@@ -149,10 +144,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 6: "The Mempool - Transaction Processing Plant" 🏭
+## Episode 6: "The Mempool - Transaction Validation & Queuing"
 **Track:** Intermediate
 **Length:** 16-18 minutes
-**Vehicle Analogy:** Exhaust and emissions system
 
 **Outline:**
 1. What is the mempool?
@@ -177,10 +171,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 7: "Digital Signatures - The Cryptographic Lock" 🔐
+## Episode 7: "Digital Signatures - The Cryptographic Lock"
 **Track:** Advanced
 **Length:** 22-25 minutes
-**Vehicle Analogy:** Ignition key and security system
 
 **Outline:**
 1. Public key cryptography basics
@@ -205,10 +198,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 8: "Chain Reorganization - Forking Roads" 🛤️
+## Episode 8: "Chain Reorganization - Competing Chains"
 **Track:** Advanced
 **Length:** 18-20 minutes
-**Vehicle Analogy:** Vehicle changing routes dynamically
 
 **Outline:**
 1. Why reorgs happen
@@ -232,10 +224,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 9: "Block Validation - The Assembly Line" 🏗️
+## Episode 9: "Block Validation - Consensus Rules"
 **Track:** Advanced
 **Length:** 20-22 minutes
-**Vehicle Analogy:** Quality control in manufacturing
 
 **Outline:**
 1. Block structure
@@ -260,10 +251,9 @@ Episodes focused on specific subsystems or algorithms
 
 ---
 
-## Episode 10: "The Database Layer - Storing the Chain" 💾
+## Episode 10: "The Database Layer - Storing the Chain"
 **Track:** Advanced
 **Length:** 15-18 minutes
-**Vehicle Analogy:** Vehicle maintenance records and storage
 
 **Outline:**
 1. LevelDB for UTXO set

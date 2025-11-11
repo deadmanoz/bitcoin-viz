@@ -31,7 +31,7 @@ install:
     echo "✓ Dependencies installed"
 
 # Render animation at low quality (preview) - usage: just preview SceneName [file]
-preview scene_name file="act1_creation":
+preview scene_name file="transaction_lifecycle/act1_creation":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -43,7 +43,7 @@ preview scene_name file="act1_creation":
     manim -ql animations/{{file}}.py {{scene_name}}
 
 # Render animation at medium quality (720p) - usage: just render SceneName [file]
-render scene_name file="transaction_lifecycle":
+render scene_name file="transaction_lifecycle/transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -55,7 +55,7 @@ render scene_name file="transaction_lifecycle":
     manim -qm animations/{{file}}.py {{scene_name}}
 
 # Render animation at high quality (1080p) - usage: just render-hq SceneName [file]
-render-hq scene_name file="transaction_lifecycle":
+render-hq scene_name file="transaction_lifecycle/transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -67,7 +67,7 @@ render-hq scene_name file="transaction_lifecycle":
     manim -qh animations/{{file}}.py {{scene_name}}
 
 # Render animation at 4K quality - usage: just render-4k SceneName [file]
-render-4k scene_name file="transaction_lifecycle":
+render-4k scene_name file="transaction_lifecycle/transaction_lifecycle":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -78,18 +78,49 @@ render-4k scene_name file="transaction_lifecycle":
     echo "Rendering {{scene_name}} at 4K quality (2160p)..."
     manim -qk animations/{{file}}.py {{scene_name}}
 
-# Render all POC scenes at preview quality
+# Render all lifecycle scenes at preview quality
+preview-lifecycle:
+    @just preview TransactionLifecycleIntro transaction_lifecycle/transaction_lifecycle
+    @just preview TheWallet transaction_lifecycle/act1_creation
+    @just preview TransactionConstruction transaction_lifecycle/act1_creation
+    @just preview InitialBroadcast transaction_lifecycle/act2_propagation
+    @just preview NodeValidation transaction_lifecycle/act2_propagation
+    @just preview MempoolWaiting transaction_lifecycle/act3_mempool
+    @just preview BlockTemplate transaction_lifecycle/act4_mining
+    @just preview Mining transaction_lifecycle/act4_mining
+    @just preview BlockPropagation transaction_lifecycle/act5_confirmation
+    @just preview ChainExtension transaction_lifecycle/act5_confirmation
+
+# Render all incoming transaction scenes at preview quality
+preview-incoming:
+    @just preview IncomingTransactionIntro incoming_transaction/scenes
+    @just preview NetworkLayer incoming_transaction/scenes
+    @just preview DownloadManagement incoming_transaction/scenes
+    @just preview ValidationPipeline incoming_transaction/scenes
+    @just preview PreChecks incoming_transaction/scenes
+    @just preview MempoolAdmission incoming_transaction/scenes
+
+# Backward compatibility: preview-all renders all lifecycle scenes
 preview-all:
-    @just preview TransactionLifecycleIntro transaction_lifecycle
-    @just preview TheWallet act1_creation
-    @just preview TransactionConstruction act1_creation
-    @just preview InitialBroadcast act2_propagation
-    @just preview NodeValidation act2_propagation
-    @just preview MempoolWaiting act3_mempool
-    @just preview BlockTemplate act4_mining
-    @just preview Mining act4_mining
-    @just preview BlockPropagation act5_confirmation
-    @just preview ChainExtension act5_confirmation
+    @just preview-lifecycle
+
+# Render complete incoming transaction sequence
+render-incoming quality="ql":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d "venv" ]; then
+        echo "Error: venv not found. Run 'just setup' first."
+        exit 1
+    fi
+    export PATH="./venv/bin:$PATH"
+    echo "Rendering incoming transaction processing at {{quality}}..."
+    manim -{{quality}} animations/incoming_transaction/scenes.py IncomingTransactionIntro
+    manim -{{quality}} animations/incoming_transaction/scenes.py NetworkLayer
+    manim -{{quality}} animations/incoming_transaction/scenes.py DownloadManagement
+    manim -{{quality}} animations/incoming_transaction/scenes.py ValidationPipeline
+    manim -{{quality}} animations/incoming_transaction/scenes.py PreChecks
+    manim -{{quality}} animations/incoming_transaction/scenes.py MempoolAdmission
+    echo "✓ All incoming transaction scenes rendered"
 
 # Render complete transaction lifecycle (all acts)
 render-lifecycle quality="ql":
@@ -101,15 +132,15 @@ render-lifecycle quality="ql":
     fi
     export PATH="./venv/bin:$PATH"
     echo "Rendering complete transaction lifecycle at {{quality}}..."
-    manim -{{quality}} animations/act1_creation.py TheWallet
-    manim -{{quality}} animations/act1_creation.py TransactionConstruction
-    manim -{{quality}} animations/act2_propagation.py InitialBroadcast
-    manim -{{quality}} animations/act2_propagation.py NodeValidation
-    manim -{{quality}} animations/act3_mempool.py MempoolWaiting
-    manim -{{quality}} animations/act4_mining.py BlockTemplate
-    manim -{{quality}} animations/act4_mining.py Mining
-    manim -{{quality}} animations/act5_confirmation.py BlockPropagation
-    manim -{{quality}} animations/act5_confirmation.py ChainExtension
+    manim -{{quality}} animations/transaction_lifecycle/act1_creation.py TheWallet
+    manim -{{quality}} animations/transaction_lifecycle/act1_creation.py TransactionConstruction
+    manim -{{quality}} animations/transaction_lifecycle/act2_propagation.py InitialBroadcast
+    manim -{{quality}} animations/transaction_lifecycle/act2_propagation.py NodeValidation
+    manim -{{quality}} animations/transaction_lifecycle/act3_mempool.py MempoolWaiting
+    manim -{{quality}} animations/transaction_lifecycle/act4_mining.py BlockTemplate
+    manim -{{quality}} animations/transaction_lifecycle/act4_mining.py Mining
+    manim -{{quality}} animations/transaction_lifecycle/act5_confirmation.py BlockPropagation
+    manim -{{quality}} animations/transaction_lifecycle/act5_confirmation.py ChainExtension
     echo "✓ All lifecycle scenes rendered"
 
 # Join rendered lifecycle videos into single video
@@ -120,15 +151,15 @@ join-lifecycle quality="480p15":
 
     # Define the video files in order
     videos=(
-        "media/videos/act1_creation/{{quality}}/TheWallet.mp4"
-        "media/videos/act1_creation/{{quality}}/TransactionConstruction.mp4"
-        "media/videos/act2_propagation/{{quality}}/InitialBroadcast.mp4"
-        "media/videos/act2_propagation/{{quality}}/NodeValidation.mp4"
-        "media/videos/act3_mempool/{{quality}}/MempoolWaiting.mp4"
-        "media/videos/act4_mining/{{quality}}/BlockTemplate.mp4"
-        "media/videos/act4_mining/{{quality}}/Mining.mp4"
-        "media/videos/act5_confirmation/{{quality}}/BlockPropagation.mp4"
-        "media/videos/act5_confirmation/{{quality}}/ChainExtension.mp4"
+        "media/videos/transaction_lifecycle/act1_creation/{{quality}}/TheWallet.mp4"
+        "media/videos/transaction_lifecycle/act1_creation/{{quality}}/TransactionConstruction.mp4"
+        "media/videos/transaction_lifecycle/act2_propagation/{{quality}}/InitialBroadcast.mp4"
+        "media/videos/transaction_lifecycle/act2_propagation/{{quality}}/NodeValidation.mp4"
+        "media/videos/transaction_lifecycle/act3_mempool/{{quality}}/MempoolWaiting.mp4"
+        "media/videos/transaction_lifecycle/act4_mining/{{quality}}/BlockTemplate.mp4"
+        "media/videos/transaction_lifecycle/act4_mining/{{quality}}/Mining.mp4"
+        "media/videos/transaction_lifecycle/act5_confirmation/{{quality}}/BlockPropagation.mp4"
+        "media/videos/transaction_lifecycle/act5_confirmation/{{quality}}/ChainExtension.mp4"
     )
 
     # Check if all videos exist
@@ -146,10 +177,10 @@ join-lifecycle quality="480p15":
     done
 
     # Create output directory if needed
-    mkdir -p media/videos/full_lifecycle/{{quality}}
+    mkdir -p media/videos/transaction_lifecycle/{{quality}}
 
     # Join videos using ffmpeg
-    output="media/videos/full_lifecycle/{{quality}}/TransactionLifecycle_Complete.mp4"
+    output="media/videos/transaction_lifecycle/{{quality}}/transaction_lifecycle_complete.mp4"
     ffmpeg -f concat -safe 0 -i "$temp_list" -c copy "$output" -y
 
     # Cleanup
@@ -159,8 +190,52 @@ join-lifecycle quality="480p15":
     echo "  $output"
     du -h "$output"
 
+# Join rendered incoming transaction videos into single video
+join-incoming quality="480p15":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Joining incoming transaction videos at {{quality}} quality..."
+
+    # Define the video files in order
+    videos=(
+        "media/videos/incoming_transaction/scenes/{{quality}}/IncomingTransactionIntro.mp4"
+        "media/videos/incoming_transaction/scenes/{{quality}}/NetworkLayer.mp4"
+        "media/videos/incoming_transaction/scenes/{{quality}}/DownloadManagement.mp4"
+        "media/videos/incoming_transaction/scenes/{{quality}}/ValidationPipeline.mp4"
+        "media/videos/incoming_transaction/scenes/{{quality}}/PreChecks.mp4"
+        "media/videos/incoming_transaction/scenes/{{quality}}/MempoolAdmission.mp4"
+    )
+
+    # Check if all videos exist
+    for video in "${videos[@]}"; do
+        if [ ! -f "$video" ]; then
+            echo "Error: $video not found. Run 'just render-incoming' first."
+            exit 1
+        fi
+    done
+
+    # Create temporary file list for ffmpeg
+    temp_list=$(mktemp)
+    for video in "${videos[@]}"; do
+        echo "file '$PWD/$video'" >> "$temp_list"
+    done
+
+    # Create output directory if needed
+    mkdir -p media/videos/incoming_transaction/{{quality}}
+
+    # Join videos using ffmpeg
+    output="media/videos/incoming_transaction/{{quality}}/incoming_transaction_complete.mp4"
+    ffmpeg -f concat -safe 0 -i "$temp_list" -c copy "$output" -y
+
+    # Cleanup
+    rm "$temp_list"
+
+    echo "✓ Complete incoming transaction video created:"
+    echo "  $output"
+    du -h "$output"
+
 # List all available scenes in a file - usage: just list-scenes [file]
-list-scenes file="act1_creation":
+list-scenes file="transaction_lifecycle/act1_creation":
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "venv" ]; then
@@ -194,7 +269,7 @@ stats:
     echo "📊 Bitcoin Visualization Project Stats"
     echo ""
     echo "Animation files:"
-    find animations -name "*.py" -type f | wc -l | xargs echo "  "
+    find animations -name "*.py" -type f -not -name "__init__.py" | wc -l | xargs echo "  "
     echo ""
     echo "Documentation files:"
     find docs -name "*.md" -type f | wc -l | xargs echo "  "
@@ -207,7 +282,7 @@ stats:
         du -sh media/ | cut -f1 | xargs echo "  "
     else
         echo "Rendered videos:"
-        echo "   0 (run 'just preview-all' to render POC scenes)"
+        echo "   0 (run 'just preview-lifecycle' to render lifecycle scenes)"
     fi
 
 # Open rendered video directory
@@ -216,9 +291,14 @@ open-media:
     set -euo pipefail
     if [ -d "media/videos" ]; then
         echo "Media directory: $(pwd)/media/videos"
-        ls -lh media/videos/*/480p15/*.mp4 2>/dev/null || echo "No preview quality videos found"
+        echo ""
+        echo "Transaction Lifecycle videos:"
+        ls -lh media/videos/transaction_lifecycle/*/480p15/*.mp4 2>/dev/null || echo "  None found"
+        echo ""
+        echo "Incoming Transaction videos:"
+        ls -lh media/videos/incoming_transaction/*/480p15/*.mp4 2>/dev/null || echo "  None found"
     else
-        echo "No media files yet. Run 'just preview-all' to render POC scenes."
+        echo "No media files yet. Run 'just preview-lifecycle' or 'just preview-incoming' to render."
     fi
 
 # Run Python in the venv (useful for testing)

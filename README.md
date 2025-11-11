@@ -19,6 +19,7 @@ bitcoin-viz/
 │   ├── act4_mining.py             # Block template & mining
 │   └── act5_confirmation.py       # Block propagation & chain extension
 ├── assets/             # Visual assets (SVGs, images)
+├── bitcoin-core/       # Bitcoin Core source code (submodule, pinned to v30.0)
 ├── bitcoin_hooks/      # Python utilities for Bitcoin Core integration
 ├── scripts/            # Helper scripts
 ├── docs/               # Storyboards and documentation
@@ -74,6 +75,24 @@ just preview-all
 # See all available commands
 just --list
 ```
+
+## Bitcoin Core Submodule
+
+This project includes the Bitcoin Core source code as a git submodule (pinned to v30.0) for easy reference when creating animations. The submodule is located at `bitcoin-core/`.
+
+**Initial clone:** If you're cloning this repository for the first time, initialize the submodule:
+
+```bash
+git submodule update --init --recursive
+```
+
+**Already cloned?** If you pulled these changes after the repository was already cloned:
+
+```bash
+git submodule update --init --recursive
+```
+
+The Bitcoin Core codebase will be checked out at the v30.0 release tag, allowing you to reference the exact code used in the animations. You can explore different versions by checking out other tags within the `bitcoin-core/` directory.
 
 ## Common Commands
 
