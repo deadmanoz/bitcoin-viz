@@ -1,49 +1,56 @@
-# Bitcoin Visualization Project
+# Bitcoin Visualisation Project
 
-Inspired by 3Blue1Brown, this project creates educational animations explaining how Bitcoin works by peeling back layers of abstraction.
+Inspired by [3Blue1Brown](https://www.youtube.com/@3blue1brown) (a YouTube channel known for visually stunning mathematical explanations) and the [Bitcoin Dev Project](https://bitcoindevs.xyz/), this project creates educational animations explaining how Bitcoin works by peeling back layers of abstraction.
 
 ## Concept
 
-Using a synthwave/cyberpunk visual style with neon colors on dark backgrounds, we explore Bitcoin's technical internals through smooth, engaging animations. Starting with the transaction lifecycle, we'll progressively dive deeper into consensus, networking, and cryptographic mechanisms.
+We explore Bitcoin's technical internals through smooth, engaging animations. Starting with the transaction lifecycle, we'll progressively dive deeper into consensus, networking, and cryptographic mechanisms.
 
 ## Structure
 
 ```
 bitcoin-viz/
-├── animations/          # Manim scene files
-│   ├── common.py                   # Shared color palette and utilities
-│   ├── transaction_lifecycle.py    # Intro scene + legacy Act scenes
-│   ├── act1_creation.py           # Wallet & transaction construction
-│   ├── act2_propagation.py        # Network broadcast & validation
-│   ├── act3_mempool.py            # Mempool waiting area
-│   ├── act4_mining.py             # Block template & mining
-│   └── act5_confirmation.py       # Block propagation & chain extension
-├── assets/             # Visual assets (SVGs, images)
-├── bitcoin-core/       # Bitcoin Core source code (submodule, pinned to v30.0)
-├── bitcoin_hooks/      # Python utilities for Bitcoin Core integration
-├── scripts/            # Helper scripts
-├── docs/               # Storyboards and documentation
-└── media/              # Rendered videos (git-ignored)
+├── animations/                          # Manim scene files
+│   ├── common.py                        # Shared colour palette and utilities
+│   ├── transaction_lifecycle/           # Transaction lifecycle animations
+│   │   ├── __init__.py
+│   │   ├── transaction_lifecycle.py     # Main lifecycle orchestrator
+│   │   ├── act1_creation.py            # Wallet & transaction construction
+│   │   ├── act2_propagation.py         # Network broadcast & validation
+│   │   ├── act3_mempool.py             # Mempool waiting area
+│   │   ├── act4_mining.py              # Block template & mining
+│   │   └── act5_confirmation.py        # Block propagation & chain extension
+│   └── incoming_transaction/            # Incoming transaction animations
+│       ├── __init__.py
+│       └── scenes.py
+├── assets/                              # Visual assets (SVGs, images)
+├── bitcoin-core/                        # Bitcoin Core source code (submodule, pinned to v30.0)
+├── bitcoin_hooks/                       # Python utilities for Bitcoin Core integration
+├── scripts/                             # Helper scripts
+├── docs/                                # Storyboards and documentation
+└── media/                               # Rendered videos (git-ignored)
     └── videos/
-        ├── act1_creation/          # Act 1 scene outputs
-        ├── act2_propagation/       # Act 2 scene outputs
-        ├── act3_mempool/           # Act 3 scene outputs
-        ├── act4_mining/            # Act 4 scene outputs
-        ├── act5_confirmation/      # Act 5 scene outputs
-        └── full_lifecycle/         # Complete joined video
+        ├── transaction_lifecycle/       # Transaction lifecycle outputs
+        │   ├── act1_creation/          # Act 1 scene outputs
+        │   ├── act2_propagation/       # Act 2 scene outputs
+        │   ├── act3_mempool/           # Act 3 scene outputs
+        │   ├── act4_mining/            # Act 4 scene outputs
+        │   ├── act5_confirmation/      # Act 5 scene outputs
+        │   └── full_lifecycle/         # Complete joined video
+        └── incoming_transaction/        # Incoming transaction outputs
 ```
 
-## Animation Organization
+## Animation Organisation
 
 Each "Act" is separated into its own file for easier iteration:
 
-- **Act 1: Creation** (`act1_creation.py`) - Wallet UTXO selection and transaction construction
-- **Act 2: Propagation** (`act2_propagation.py`) - P2P network broadcast and node validation
-- **Act 3: Mempool** (`act3_mempool.py`) - Fee-sorted waiting area
-- **Act 4: Mining** (`act4_mining.py`) - Block template assembly and mining process
-- **Act 5: Confirmation** (`act5_confirmation.py`) - Block propagation and chain extension
+- **Act 1: Creation** (`transaction_lifecycle/act1_creation.py`) - Wallet UTXO selection and transaction construction
+- **Act 2: Propagation** (`transaction_lifecycle/act2_propagation.py`) - P2P network broadcast and node validation
+- **Act 3: Mempool** (`transaction_lifecycle/act3_mempool.py`) - Fee-sorted waiting area
+- **Act 4: Mining** (`transaction_lifecycle/act4_mining.py`) - Block template assembly and mining process
+- **Act 5: Confirmation** (`transaction_lifecycle/act5_confirmation.py`) - Block propagation and chain extension
 
-All acts share a common synthwave/cyberpunk color palette defined in `common.py`.
+All acts share a common colour palette defined in `common.py`.
 
 ## Requirements
 

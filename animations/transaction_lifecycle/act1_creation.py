@@ -428,6 +428,20 @@ class TransactionConstruction(Scene):
         self.play(Write(title))
         self.wait(0.5)
 
+        # Continuity description
+        description = Text(
+            "Alice's wallet constructs a transaction to broadcast to the Bitcoin network",
+            font_size=24,
+            color=SYNTH_PEACH
+        )
+        description.next_to(title, DOWN, buff=0.5)
+        self.play(FadeIn(description, shift=DOWN))
+        self.wait(1)
+
+        # Fade out description before showing packet
+        self.play(FadeOut(description))
+        self.wait(0.3)
+
         # Create central transaction packet - crystalline hexagonal structure
         packet_center = self.create_transaction_packet()
         packet_center.scale(0.3)
