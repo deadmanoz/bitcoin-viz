@@ -14,3 +14,4 @@ SYNTH_ORANGE = "#FF6C11"
 SYNTH_PURPLE = "#261447"
 SYNTH_PEACH = "#FF8664"
 SYNTH_GOLD = "#FFD700"
+SYNTH_PINK = "#FF1694"  # Hot pink for better visibility
