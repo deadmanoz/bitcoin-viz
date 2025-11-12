@@ -438,71 +438,110 @@ class TransactionConstruction(Scene):
         self.play(FadeIn(description, shift=DOWN))
         self.wait(1)
 
-        # Fade out description before showing packet
+        # Fade out description before showing blocks
         self.play(FadeOut(description))
         self.wait(0.3)
 
-        # Create central transaction packet - crystalline hexagonal structure
-        packet_center = self.create_transaction_packet()
-        packet_center.scale(0.3)
+        # Define transaction components (in order from top to bottom when stacked)
+        # Header will be at top, Fee at bottom
+        components_data = [
+            {"label": "Header", "sublabel": "version, locktime", "color": SYNTH_CYAN, "height": 0.8},
+            {"label": "Inputs", "sublabel": "0.5 + 0.35 BTC UTXOs", "color": SYNTH_GREEN, "height": 1.2},
+            {"label": "Outputs", "sublabel": "0.7 → Bob, 0.14 → Alice", "color": SYNTH_ORANGE, "height": 1.2},
+            {"label": "Fees", "sublabel": "0.01 BTC to miners", "color": SYNTH_PEACH, "height": 0.8},
+        ]
 
-        self.play(
-            FadeIn(packet_center, scale=0.1),
-            run_time=1.5
-        )
+        # Build transaction by animating blocks falling upwards from bottom
+        # They will stack in order with Header at top
+        transaction_blocks = VGroup()
+        block_objects = []
 
-        # Pulse and grow
-        self.play(
-            packet_center.animate.scale(2.5),
-            run_time=1
-        )
+        # Calculate total height to center the final structure
+        total_height = sum(comp["height"] for comp in components_data) + 0.2 * (len(components_data) - 1)
+        start_y = total_height / 2
+
+        current_y = start_y
+
+        for i, comp in enumerate(components_data):
+            # Create block below screen
+            block = self.create_transaction_block(
+                comp["label"],
+                comp["sublabel"],
+                comp["color"],
+                height=comp["height"]
+            )
+
+            # Position for final stacked structure
+            final_y = current_y - comp["height"] / 2
+
+            # Start position (below screen)
+            block.move_to(DOWN * 5)
+
+            # Add to scene and store
+            transaction_blocks.add(block)
+            block_objects.append({"block": block, "data": comp, "y": final_y})
+
+            # Animate block rising from bottom with slight rotation
+            self.play(
+                block.animate.move_to(UP * final_y).rotate(0),
+                rate_func=rate_functions.ease_out_bounce,
+                run_time=0.8
+            )
+
+            # Play a subtle "snap" effect
+            self.play(
+                block.animate.scale(1.05),
+                run_time=0.1
+            )
+            self.play(
+                block.animate.scale(1/1.05),
+                run_time=0.1
+            )
+
+            self.wait(0.2)
+
+            # Update position for next block
+            current_y -= (comp["height"] + 0.2)
 
         self.wait(0.5)
 
-        # Show packet components appearing in layers
-        # Inputs: 0.5 + 0.35 = 0.85 BTC
-        # Outputs: 0.7 to Bob + 0.1 change to Alice = 0.8 BTC
-        # Fee: 0.85 - 0.8 = 0.05 BTC
-        components = [
-            {"label": "Header", "sublabel": "version, locktime", "color": SYNTH_CYAN, "pos": UP * 2.5},
-            {"label": "Inputs", "sublabel": "0.5 + 0.35 BTC UTXOs", "color": SYNTH_GREEN, "pos": UP * 1},
-            {"label": "Outputs", "sublabel": "0.7 → Bob, 0.1 → Alice", "color": SYNTH_ORANGE, "pos": DOWN * 0.5},
-            {"label": "Fee", "sublabel": "0.05 BTC to miners", "color": SYNTH_PEACH, "pos": DOWN * 2},
-        ]
+        # Add arrows and labels pointing to each block
+        annotations = VGroup()
+        for i, block_obj in enumerate(block_objects):
+            block = block_obj["block"]
+            comp = block_obj["data"]
 
-        component_labels = VGroup()
-        for comp in components:
+            # Create detailed label
             label_group = self.create_component_label(
                 comp["label"],
                 comp["sublabel"],
                 comp["color"]
             )
-            label_group.next_to(packet_center, RIGHT, buff=1.5).shift(comp["pos"] - UP * 0.5)
+            label_group.next_to(block, RIGHT, buff=1.5)
 
-            # Arrow from packet to label
+            # Arrow from block to label
             arrow = Arrow(
-                packet_center.get_right(),
+                block.get_right(),
                 label_group.get_left(),
                 color=comp["color"],
                 buff=0.1,
                 stroke_width=2,
-                max_tip_length_to_length_ratio=0.1
+                max_tip_length_to_length_ratio=0.15
             )
 
-            component_labels.add(VGroup(arrow, label_group))
+            annotations.add(VGroup(arrow, label_group))
 
-        # Animate each component appearing
-        for comp_group in component_labels:
+            # Animate label appearing
             self.play(
-                GrowArrow(comp_group[0]),
-                FadeIn(comp_group[1], shift=LEFT * 0.3),
-                run_time=0.7
+                GrowArrow(arrow),
+                FadeIn(label_group, shift=LEFT * 0.3),
+                run_time=0.5
             )
-            self.wait(0.3)
+            self.wait(0.2)
 
-        self.wait(1)
+        self.wait(0.8)
 
-        # Highlight scriptPubKey (locking script)
+        # Highlight scriptPubKey (locking script) on outputs
         script_text = Text(
             "scriptPubKey: Locking scripts on outputs",
             font_size=20,
@@ -510,15 +549,16 @@ class TransactionConstruction(Scene):
         )
         script_text.to_edge(DOWN).shift(UP * 0.5)
 
-        # Create circuit pattern effect
+        # Create circuit pattern effect on the outputs block
         circuit = self.create_circuit_pattern()
-        circuit.scale(0.4).next_to(packet_center, DOWN, buff=0.3)
+        outputs_block = block_objects[2]["block"]  # Outputs is the 3rd block
+        circuit.scale(0.3).next_to(outputs_block, RIGHT, buff=0.2)
 
         self.play(Write(script_text))
-        self.play(Create(circuit), run_time=1.5)
-        self.wait(1)
+        self.play(Create(circuit), run_time=1.2)
+        self.wait(0.8)
 
-        # Signature generation effect
+        # Signature generation effect on inputs
         sig_text = Text(
             "scriptSig: Alice's signatures unlock inputs",
             font_size=20,
@@ -526,9 +566,10 @@ class TransactionConstruction(Scene):
         )
         sig_text.move_to(script_text)
 
-        # Lightning effect for signature
+        # Lightning effect for signature on inputs block
         lightning = self.create_signature_lightning()
-        lightning.move_to(packet_center)
+        inputs_block = block_objects[1]["block"]  # Inputs is the 2nd block
+        lightning.scale(0.7).move_to(inputs_block)
 
         self.play(
             Transform(script_text, sig_text),
@@ -537,7 +578,7 @@ class TransactionConstruction(Scene):
         self.play(Create(lightning), run_time=0.8)
         self.wait(0.5)
 
-        # Transaction ready (changed from "sealed")
+        # Transaction ready
         ready_text = Text(
             "Transaction signed and ready to broadcast",
             font_size=24,
@@ -549,50 +590,67 @@ class TransactionConstruction(Scene):
         self.play(
             Transform(script_text, ready_text),
             FadeOut(lightning),
-            packet_center.animate.set_stroke(color=SYNTH_GREEN, width=4),
             run_time=1
         )
 
-        # Intense glow effect
+        # Highlight entire transaction structure with glow
+        for block_obj in block_objects:
+            block = block_obj["block"]
+            self.play(
+                block[0].animate.set_stroke(color=SYNTH_GREEN, width=3),
+                run_time=0.3
+            )
+
+        # Final glow effect on all blocks
         self.play(
-            packet_center.animate.set_fill(opacity=0.4),
+            *[block_obj["block"][0].animate.set_fill(opacity=0.3) for block_obj in block_objects],
             run_time=0.5
         )
         self.play(
-            packet_center.animate.set_fill(opacity=0.2),
+            *[block_obj["block"][0].animate.set_fill(opacity=0.15) for block_obj in block_objects],
             run_time=0.5
         )
 
         self.wait(2)
 
-    def create_transaction_packet(self):
-        """Create a crystalline hexagonal packet structure"""
-        # Central hexagon
-        center = RegularPolygon(n=6, radius=1, color=SYNTH_GREEN, stroke_width=3)
-        center.set_fill(color=SYNTH_GREEN, opacity=0.15)
+    def create_transaction_block(self, label, sublabel, color, height=1.0):
+        """Create a Lego/Tetris-style block for transaction components"""
+        width = 3.5
 
-        # Surrounding hexagons
-        surrounding = VGroup()
-        for i in range(6):
-            angle = i * PI / 3
-            hex = RegularPolygon(n=6, radius=0.5, color=SYNTH_CYAN, stroke_width=2)
-            hex.set_fill(color=SYNTH_CYAN, opacity=0.1)
-            hex.move_to(center.get_center() + np.array([np.cos(angle), np.sin(angle), 0]) * 1.2)
-            surrounding.add(hex)
+        # Main rectangular block with rounded corners (Lego-like)
+        block_rect = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.15,
+            color=color,
+            stroke_width=3
+        )
+        block_rect.set_fill(color=color, opacity=0.15)
 
-        # Connection lines
-        connections = VGroup()
-        for hex in surrounding:
-            line = Line(
-                center.get_center(),
-                hex.get_center(),
-                color=SYNTH_GREEN,
-                stroke_width=1,
-                stroke_opacity=0.5
+        # Add Lego-style connection nubs on top
+        nubs = VGroup()
+        nub_count = 4
+        nub_spacing = width / (nub_count + 1)
+        for i in range(nub_count):
+            x_pos = -width/2 + nub_spacing * (i + 1)
+            nub = Circle(
+                radius=0.12,
+                color=color,
+                stroke_width=2
             )
-            connections.add(line)
+            nub.set_fill(color=color, opacity=0.3)
+            nub.move_to(block_rect.get_top() + UP * 0.08 + RIGHT * x_pos)
+            nubs.add(nub)
 
-        return VGroup(connections, center, surrounding)
+        # Label text inside block
+        label_text = Text(label, font_size=28, color=color, weight=BOLD)
+        sublabel_text = Text(sublabel, font_size=16, color=color)
+        sublabel_text.set_opacity(0.8)
+
+        text_group = VGroup(label_text, sublabel_text).arrange(DOWN, buff=0.1)
+        text_group.move_to(block_rect)
+
+        return VGroup(block_rect, nubs, text_group)
 
     def create_component_label(self, label, sublabel, color):
         """Create a label with sublabel for transaction components"""
