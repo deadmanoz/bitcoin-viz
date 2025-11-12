@@ -36,7 +36,7 @@ class TheWallet(Scene):
         self.play(Create(grid), run_time=1.5)
 
         # Create wallet label
-        wallet_label = Text("Alice's Wallet", font_size=28, color=SYNTH_PEACH)
+        wallet_label = Text("Alice's Available Funds: 0.95 BTC across 3 UTXOs", font_size=24, color=SYNTH_PEACH)
         wallet_label.to_edge(UP).shift(DOWN * 0.8)
         self.play(FadeIn(wallet_label, shift=DOWN))
 
@@ -44,7 +44,7 @@ class TheWallet(Scene):
         utxos_data = [
             {"amount": "0.5 BTC", "txid": "abc123...def456", "output": "#0", "pos": LEFT * 3 + UP * 1},
             {"amount": "0.35 BTC", "txid": "789ghi...jkl012", "output": "#1", "pos": ORIGIN + UP * 1},
-            {"amount": "0.15 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
+            {"amount": "0.1 BTC", "txid": "mno345...pqr678", "output": "#2", "pos": RIGHT * 3 + UP * 1},
         ]
 
         utxos = VGroup()
@@ -73,6 +73,17 @@ class TheWallet(Scene):
         self.play(Write(explain))
         self.wait(1.5)
 
+        # Show coin selection label
+        coin_selection_label = Text(
+            "Coin Selection",
+            font_size=20,
+            color=SYNTH_CYAN,
+            weight=BOLD
+        )
+        coin_selection_label.to_edge(DOWN).shift(UP * 2.2)
+        self.play(FadeIn(coin_selection_label, shift=UP * 0.2))
+        self.wait(0.5)
+
         # Show UTXO selection - highlight selected ones
         selection_text = Text(
             "Wallet selects: 0.5 + 0.35 = 0.85 BTC",
@@ -83,10 +94,8 @@ class TheWallet(Scene):
 
         self.play(
             Transform(explain, selection_text),
-            utxos[0].animate.set_stroke(color=SYNTH_ORANGE, width=4),
-            utxos[1].animate.set_stroke(color=SYNTH_ORANGE, width=4),
-            utxos[0][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.3),
-            utxos[1][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.3),
+            utxos[0].animate.set_stroke(color=SYNTH_ORANGE, width=2),
+            utxos[1].animate.set_stroke(color=SYNTH_ORANGE, width=2),
             run_time=1.5
         )
 
@@ -103,15 +112,252 @@ class TheWallet(Scene):
                 run_time=0.4
             )
 
-        self.wait(1)
+        self.wait(0.5)
 
-        # Fade unselected UTXO
+        # Add change distribution note
+        change_text = Text(
+            "Bob will receive 0.7 BTC and Alice will receive 0.14 BTC as change (0.01 BTC fee)",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        change_text.next_to(explain, DOWN, buff=0.3)
+
         self.play(
-            utxos[2].animate.set_opacity(0.3),
+            FadeIn(change_text, shift=UP * 0.2),
+            run_time=1
+        )
+
+        self.wait(1.5)
+
+        # Fade out unselected UTXO and other elements
+        self.play(
+            FadeOut(utxos[2]),
+            FadeOut(grid),
+            FadeOut(wallet_label),
+            FadeOut(coin_selection_label),
+            run_time=1
+        )
+        self.wait(0.5)
+
+        # === Transaction Structure Visualization ===
+        # Transform the text to show we're consuming the UTXOs
+        consuming_text = Text(
+            "Alice's 2 UTXOs are completely consumed",
+            font_size=22,
+            color=SYNTH_CYAN
+        )
+        consuming_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, consuming_text),
+            FadeOut(change_text),
+            run_time=0.8
+        )
+        self.wait(0.5)
+
+        # Move selected UTXOs to the left side
+        self.play(
+            utxos[0].animate.move_to(LEFT * 4 + UP * 0.8).scale(0.7),
+            utxos[1].animate.move_to(LEFT * 4 + DOWN * 0.8).scale(0.7),
+            run_time=1
+        )
+        self.wait(0.3)
+
+        # Create central pool (glowing circle)
+        central_pool = Circle(radius=0.8, color=SYNTH_CYAN, stroke_width=3)
+        central_pool.set_fill(color=SYNTH_CYAN, opacity=0.2)
+
+        pool_label = Text("0.85 BTC", font_size=20, color=SYNTH_CYAN, weight=BOLD)
+        pool_label.next_to(central_pool, UP, buff=0.3)
+
+        pool_group = VGroup(central_pool, pool_label)
+
+        self.play(
+            FadeIn(central_pool, scale=0.3),
             run_time=0.8
         )
 
+        # Break down UTXOs into particles
+        particles1 = self.create_particles(utxos[0].get_center(), 15)
+        particles2 = self.create_particles(utxos[1].get_center(), 15)
+
+        # Animate particles flowing from UTXOs to center
+        self.play(
+            *[particle.animate.move_to(central_pool.get_center() +
+                np.array([np.random.uniform(-0.3, 0.3), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles1],
+            *[particle.animate.move_to(central_pool.get_center() +
+                np.array([np.random.uniform(-0.3, 0.3), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles2],
+            FadeOut(utxos[0]),
+            FadeOut(utxos[1]),
+            run_time=1.5
+        )
+
+        # Show pool label with pulsing effect
+        self.play(
+            Write(pool_label),
+            central_pool.animate.set_fill(opacity=0.3),
+            run_time=0.5
+        )
+        self.play(
+            central_pool.animate.set_fill(opacity=0.15),
+            run_time=0.5
+        )
+        self.wait(0.5)
+
+        # Create output boxes on the right
+        output1_box = self.create_output_box("0.7 BTC", "(to Bob)", SYNTH_ORANGE)
+        output1_box.move_to(RIGHT * 4 + UP * 1.2)
+
+        output2_box = self.create_output_box("0.14 BTC", "(change)", SYNTH_ORANGE)
+        output2_box.move_to(RIGHT * 4 + DOWN * 0.2)
+
+        # Fee output box - more ephemeral looking with SYNTH_GOLD and lower opacity
+        fee_box = self.create_output_box("0.01 BTC", "(fee to miners)", SYNTH_GOLD)
+        fee_box.move_to(RIGHT * 4 + DOWN * 1.6)
+        fee_box[0].set_stroke(opacity=0.6)  # More ephemeral border
+        fee_box[1].set_opacity(0.7)  # More ephemeral text
+
+        # Split particles and flow to outputs (proportional to value)
+        # Total 30 particles: ~21 to Bob, ~4 to change, ~5 to fees
+        particles_to_output1 = particles1[:11] + particles2[:10]  # 21 particles for 0.7 BTC
+        particles_to_output2 = particles1[11:13] + particles2[10:12]  # 4 particles for 0.14 BTC
+        particles_to_fee = particles1[13:] + particles2[12:]  # 5 particles for 0.01 BTC
+
+        self.play(
+            *[particle.animate.move_to(output1_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_output1],
+            *[particle.animate.move_to(output2_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_output2],
+            *[particle.animate.move_to(fee_box.get_center() +
+                np.array([np.random.uniform(-0.4, 0.4), np.random.uniform(-0.3, 0.3), 0]))
+                for particle in particles_to_fee],
+            FadeOut(pool_label),
+            central_pool.animate.set_fill(opacity=0.05),
+            run_time=1.5
+        )
+
+        # Coalesce particles into output boxes
+        self.play(
+            FadeIn(output1_box, scale=0.5),
+            FadeIn(output2_box, scale=0.5),
+            FadeIn(fee_box, scale=0.5),
+            *[FadeOut(particle) for particle in particles1 + particles2],
+            run_time=1
+        )
+
+        # Show caption about creating new UTXOs and fees
+        creating_line1 = Text(
+            "...creating 2 new UTXOs: 0.7 BTC (for Bob) and 0.14 BTC (change)",
+            font_size=20,
+            color=SYNTH_GREEN
+        )
+        creating_line2 = Text(
+            "and contributing 0.01 BTC in fees to the block reward",
+            font_size=20,
+            color=SYNTH_GREEN
+        )
+
+        creating_text = VGroup(creating_line1, creating_line2).arrange(DOWN, buff=0.2, center=True)
+        creating_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, creating_text),
+            run_time=1
+        )
+        self.wait(1.5)
+
+        # Recreate input boxes to show final transaction structure
+        input1_box = self.create_output_box("0.5 BTC", "", SYNTH_GREEN)
+        input1_box.move_to(LEFT * 4 + UP * 1.2)
+
+        input2_box = self.create_output_box("0.35 BTC", "", SYNTH_GREEN)
+        input2_box.move_to(LEFT * 4 + DOWN * 0.2)
+
+        self.play(
+            FadeIn(input1_box, scale=0.5),
+            FadeIn(input2_box, scale=0.5),
+            FadeOut(central_pool),
+            run_time=0.8
+        )
+
+        self.wait(0.3)
+
+        # Add "Inputs", "Outputs", and "Fees" labels
+        inputs_label = Text("Inputs", font_size=20, color=SYNTH_GREEN, weight=BOLD)
+        inputs_label.move_to(LEFT * 4 + UP * 2.5)
+
+        outputs_label = Text("Outputs", font_size=20, color=SYNTH_ORANGE, weight=BOLD)
+        outputs_label.move_to(RIGHT * 4 + UP * 2.5)
+
+        fees_label = Text("Fees", font_size=20, color=SYNTH_GOLD, weight=BOLD)
+        fees_label.next_to(fee_box, LEFT, buff=0.5)
+
+        self.play(
+            Write(inputs_label),
+            Write(outputs_label),
+            Write(fees_label),
+            run_time=0.8
+        )
+
+        self.wait(0.5)
+
+        # Final summary
+        final_text = Text(
+            "Transaction: 0.85 BTC in → 0.84 BTC out + 0.01 BTC fee",
+            font_size=22,
+            color=SYNTH_GREEN
+        )
+        final_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, final_text),
+            run_time=1
+        )
+
         self.wait(2)
+
+    def create_particles(self, center_pos, count):
+        """Create small particle dots for flow animation"""
+        particles = VGroup()
+        for _ in range(count):
+            # Create small glowing dots
+            dot = Dot(
+                point=center_pos + np.array([
+                    np.random.uniform(-0.3, 0.3),
+                    np.random.uniform(-0.3, 0.3),
+                    0
+                ]),
+                radius=0.05,
+                color=SYNTH_CYAN
+            )
+            dot.set_fill(color=SYNTH_CYAN, opacity=0.8)
+            particles.add(dot)
+            self.add(dot)
+        return particles
+
+    def create_output_box(self, amount, label, color):
+        """Create an output box with amount and label"""
+        amount_text = Text(amount, font_size=20, color=color, weight=BOLD)
+        label_text = Text(label, font_size=14, color=color)
+        label_text.set_opacity(0.8)
+
+        text_group = VGroup(amount_text, label_text).arrange(DOWN, buff=0.1)
+
+        # Box around text
+        box = SurroundingRectangle(
+            text_group,
+            color=color,
+            stroke_width=2,
+            buff=0.2,
+            corner_radius=0.1
+        )
+        box.set_fill(color=color, opacity=0.15)
+
+        return VGroup(box, text_group)
 
     def create_utxo_hexagon(self, data):
         """Create a hexagonal UTXO with data labels (larger size)"""
