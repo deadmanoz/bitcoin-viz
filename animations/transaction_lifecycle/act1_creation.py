@@ -142,16 +142,16 @@ class TheWallet(Scene):
         self.wait(0.5)
 
         # === Transaction Structure Visualization ===
-        # Transform the text to show we're building the transaction
-        tx_build_text = Text(
-            "Building Transaction",
-            font_size=24,
+        # Transform the text to show we're consuming the UTXOs
+        consuming_text = Text(
+            "Alice's 2 UTXOs are completely consumed",
+            font_size=22,
             color=SYNTH_CYAN
         )
-        tx_build_text.to_edge(DOWN).shift(UP * 0.5)
+        consuming_text.to_edge(DOWN).shift(UP * 0.5)
 
         self.play(
-            Transform(explain, tx_build_text),
+            Transform(explain, consuming_text),
             FadeOut(change_text),
             run_time=0.8
         )
@@ -251,7 +251,21 @@ class TheWallet(Scene):
             run_time=1
         )
 
-        self.wait(0.5)
+        # Show caption about creating new UTXOs and fees
+        creating_text = Text(
+            "...creating 2 new UTXOs: 0.7 BTC (for Bob) and 0.14 BTC (change for Alice)\n"
+            "and contributing 0.01 BTC in fees to the block reward",
+            font_size=20,
+            color=SYNTH_GREEN,
+            line_spacing=1.2
+        )
+        creating_text.to_edge(DOWN).shift(UP * 0.5)
+
+        self.play(
+            Transform(explain, creating_text),
+            run_time=1
+        )
+        self.wait(1.5)
 
         # Recreate input boxes to show final transaction structure
         input1_box = self.create_output_box("0.5 BTC", "", SYNTH_GREEN)
@@ -269,16 +283,20 @@ class TheWallet(Scene):
 
         self.wait(0.3)
 
-        # Add "Inputs" and "Outputs" labels
+        # Add "Inputs", "Outputs", and "Fees" labels
         inputs_label = Text("Inputs", font_size=20, color=SYNTH_GREEN, weight=BOLD)
         inputs_label.move_to(LEFT * 4 + UP * 2.5)
 
         outputs_label = Text("Outputs", font_size=20, color=SYNTH_ORANGE, weight=BOLD)
         outputs_label.move_to(RIGHT * 4 + UP * 2.5)
 
+        fees_label = Text("Fees", font_size=20, color=SYNTH_GOLD, weight=BOLD)
+        fees_label.next_to(fee_box, LEFT, buff=0.5)
+
         self.play(
             Write(inputs_label),
             Write(outputs_label),
+            Write(fees_label),
             run_time=0.8
         )
 
