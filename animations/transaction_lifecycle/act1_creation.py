@@ -36,7 +36,7 @@ class TheWallet(Scene):
         self.play(Create(grid), run_time=1.5)
 
         # Create wallet label
-        wallet_label = Text("Alice's Wallet", font_size=28, color=SYNTH_PEACH)
+        wallet_label = Text("Alice's Available Funds: 0.95 BTC across 3 UTXOs", font_size=24, color=SYNTH_PEACH)
         wallet_label.to_edge(UP).shift(DOWN * 0.8)
         self.play(FadeIn(wallet_label, shift=DOWN))
 
@@ -94,10 +94,8 @@ class TheWallet(Scene):
 
         self.play(
             Transform(explain, selection_text),
-            utxos[0].animate.set_stroke(color=SYNTH_ORANGE, width=4),
-            utxos[1].animate.set_stroke(color=SYNTH_ORANGE, width=4),
-            utxos[0][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.08),
-            utxos[1][0].animate.set_fill(color=SYNTH_ORANGE, opacity=0.08),
+            utxos[0].animate.set_stroke(color=SYNTH_ORANGE, width=2),
+            utxos[1].animate.set_stroke(color=SYNTH_ORANGE, width=2),
             run_time=1.5
         )
 
@@ -252,13 +250,18 @@ class TheWallet(Scene):
         )
 
         # Show caption about creating new UTXOs and fees
-        creating_text = Text(
-            "...creating 2 new UTXOs: 0.7 BTC (for Bob) and 0.14 BTC (change for Alice)\n"
+        creating_line1 = Text(
+            "...creating 2 new UTXOs: 0.7 BTC (for Bob) and 0.14 BTC (change)",
+            font_size=20,
+            color=SYNTH_GREEN
+        )
+        creating_line2 = Text(
             "and contributing 0.01 BTC in fees to the block reward",
             font_size=20,
-            color=SYNTH_GREEN,
-            line_spacing=1.2
+            color=SYNTH_GREEN
         )
+
+        creating_text = VGroup(creating_line1, creating_line2).arrange(DOWN, buff=0.2, center=True)
         creating_text.to_edge(DOWN).shift(UP * 0.5)
 
         self.play(
